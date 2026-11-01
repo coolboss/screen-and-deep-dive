@@ -17,7 +17,7 @@ An offline stock-research app for Indian listed companies. It reads Screener.in 
 2. **Screen** — a quick pre-screen grades the batch; the investment-grade scan runs the full valuation and sorts companies into act now / wait / too expensive.
 3. **Deep dive** — one company: verdict, three reasons for and against, fair-value range, action plan with entry prices, daily chart and a weekly "second opinion" from prices.
 
-Prices are fetched from a free public NSE dataset; everything else works offline. Holdings you import (Zerodha, HDFC Securities or any broker file) stay in your browser.
+Prices are fetched from a free public NSE dataset; everything else works offline. Because that dataset sometimes runs a few days late, a small job in this repository (`.github/workflows/update-prices.yml`) downloads NSE's own end-of-day file every weekday evening and keeps the last 15 trading days in `data/recent.json`. The app uses it to fill any missing recent days. Holdings you import (Zerodha, HDFC Securities or any broker file) stay in your browser.
 
 ## Privacy
 

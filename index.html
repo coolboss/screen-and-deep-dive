@@ -615,7 +615,7 @@ function setCompanySort(mode){
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='11.3.0';
+const TERMINAL_VERSION='11.4.0';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -3079,6 +3079,39 @@ async function soFetchEod2(file,label){
  }
  let err=Error(`Could not reach the price data (tried ${tried.join(', ')}). Check the internet connection. If this page is open inside a preview window (for example in a chat app), download the file and open it in Chrome, Edge, Safari or Firefox, or host it on your Netlify site: preview windows block internet access. Everything else in the terminal works offline.`);err.network=true;throw err;
 }
+// ---- Top-up: eod2_data can lag by days. A nightly job in this app's own repository saves the last ~15 trading days
+// straight from NSE (data/recent.json). Missing recent days are appended from it. Same-origin first (GitHub Pages),
+// then CDN copies for when the app is opened as a downloaded file.
+const SO_RECENT_SOURCES=['data/recent.json',
+ 'https://cdn.jsdelivr.net/gh/coolboss/screen-and-deep-dive@main/data/recent.json',
+ 'https://raw.githubusercontent.com/coolboss/screen-and-deep-dive/main/data/recent.json'];
+let soRecentP=null;
+function soLoadRecent(){
+ if(soRecentP)return soRecentP;
+ soRecentP=(async()=>{
+  for(const url of SO_RECENT_SOURCES){
+   if(url.startsWith('data/')&&!/^https?:$/.test(location.protocol))continue;
+   try{let r=await fetch(url,{cache:'no-cache'});if(!r.ok)continue;let j=await r.json();if(j&&Array.isArray(j.days))return j}catch(e){}
+  }
+  return null;
+ })();
+ return soRecentP;
+}
+async function soTopUpRecent(rows,sym){
+ rows.toppedUp=0;
+ if(!rows.length)return rows;
+ let rec;try{rec=await soLoadRecent()}catch(e){rec=null}
+ if(!rec)return rows;
+ for(const day of rec.days){
+  let d=parseDateFlexible(day.date),x=day.p&&day.p[sym];
+  if(!d||!x||d<=rows[rows.length-1].date)continue;
+  let [o,c,v,q]=x,prev=rows[rows.length-1].close;
+  // eod2 adjusts for splits and bonuses; this file does not. A jump this big is probably a split: stop rather than distort the chart.
+  if(!(c>0)||Math.abs(c/prev-1)>.35)break;
+  rows.push({date:d,close:c,volume:fin(v)?v:NaN,open:fin(o)?o:NaN,dlv:fin(q)?q:NaN});rows.toppedUp++;
+ }
+ return rows;
+}
 function soSetFetchStatus(t){let el=$('#fetchStatus');if(el)el.textContent=t}
 async function soFetchBenchmark(name){
  let rows=await soFetchEod2(SO_INDEX_FILES[name]||'nifty 500',name),w=soWeekly(rows);
@@ -3087,9 +3120,9 @@ async function soFetchBenchmark(name){
 function soPriceMismatch(m,rows,sym){let lr=rows[rows.length-1];if(!fin(m.price)||!(m.price>0)||!lr)return '';let g=lr.close/m.price-1;return Math.abs(g)>.25?`${sym}'s last close in the price file is ₹${fmt(lr.close)} (${lr.date.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}), ${pct(Math.abs(g))} ${g>0?'above':'below'} Screener's price of ₹${fmt(m.price)} for ${m.company}. This is probably a different company's symbol.`:''}
 async function soFetchPrices(m,sym,quiet,force){
  sym=soCleanSym(sym);if(!sym)throw Error('Type the NSE symbol first, for example PIDILITIND.');
- let rows=await soFetchEod2(sym.toLowerCase(),sym);
+ let rows=await soTopUpRecent(await soFetchEod2(sym.toLowerCase(),sym),sym);
  let mm=force?'':soPriceMismatch(m,rows,sym);if(mm){let e=Error(mm);e.mismatch=true;e.sym=sym;throw e}
- m.priceHistory=rows;m.priceHistorySource=`NSE daily via eod2 (${sym}, to ${rows[rows.length-1].date.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})})`;soSaveSym(m,sym);
+ m.priceHistory=rows;m.priceHistorySource=`NSE daily via eod2${rows.toppedUp?` + ${rows.toppedUp} recent day${rows.toppedUp>1?'s':''} from NSE`:''} (${sym}, to ${rows[rows.length-1].date.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})})`;soSaveSym(m,sym);
  if(!benchmarkWeekly){try{await soFetchBenchmark('Nifty 500')}catch(e){}}
  return rows;
 }
@@ -3153,11 +3186,11 @@ async function soAutoFetch(m){
  let saved=soSymFor(m),cands=saved?[saved]:soSymbolCandidates(m);
  for(const sym of cands){
   try{
-   let rows=await soFetchEod2(sym.toLowerCase(),sym),lr=rows[rows.length-1];
+   let rows=await soTopUpRecent(await soFetchEod2(sym.toLowerCase(),sym),sym),lr=rows[rows.length-1];
    let fresh=(Date.now()-lr.date.getTime())<45*864e5,near=fin(m.price)&&m.price>0&&Math.abs(lr.close/m.price-1)<=.20;
    if(!saved&&!(fresh&&near))continue;
    if(m.priceHistory&&m.priceHistory.length)return 'skip'; // a file attached while we were fetching wins
-   m.priceHistory=rows;m.priceHistorySource=`NSE daily via eod2 (${sym}, to ${lr.date.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})})`;soSaveSym(m,sym);
+   m.priceHistory=rows;m.priceHistorySource=`NSE daily via eod2${rows.toppedUp?` + ${rows.toppedUp} recent day${rows.toppedUp>1?'s':''} from NSE`:''} (${sym}, to ${lr.date.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})})`;soSaveSym(m,sym);
    if(!benchmarkWeekly){try{await soFetchBenchmark('Nifty 500')}catch(e){}}
    m._fetchNote='';return 'ok';
   }catch(e){if(e.network){m._autoTried=false;m._fetchNote=e.message;throw e}}
