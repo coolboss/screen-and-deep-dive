@@ -1,5 +1,7 @@
 # Screen & Deep Dive 11 "Triage"
 
+**Version 11.6** (1 November 2026) · Batch export script version 11.6
+
 An offline stock-research app for Indian listed companies. It reads Screener.in Excel exports, classifies each company by its NSE industry, values it with a sector-specific engine, and gives a plain verdict for your holding period and return target.
 
 **Use it:** <https://coolboss.github.io/screen-and-deep-dive/> (works on phones too), or download `index.html` and open it in Chrome, Edge, Safari or Firefox on a computer.
