@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Screener batch export for Screen & Deep Dive
 // @namespace    screen-and-deep-dive
-// @version      11.5
+// @version      11.6
 // @description  Adds a "Batch export" button on screener.in. Downloads each company's Excel export plus a notes file (pros, cons, shareholding, announcements) into one zip for Screen & Deep Dive. Same code as the app's built-in bookmark.
 // @match        https://www.screener.in/*
 // @match        https://screener.in/*
@@ -16,11 +16,11 @@ if(!/(^|\.)screener\.in$/.test(location.hostname)){alert('Open www.screener.in, 
 if(document.getElementById('sbx')){document.getElementById('sbx').style.display='block';return}
 const S=(id)=>document.getElementById(id),wait=ms=>new Promise(r=>setTimeout(r,ms));
 const box=document.createElement('div');box.id='sbx';
-box.style.cssText='position:fixed;z-index:2147483647;top:14px;right:14px;width:400px;max-width:calc(100vw - 28px);max-height:calc(100vh - 28px);overflow:auto;background:#11182a;color:#edf3ff;font:13px/1.45 system-ui,Segoe UI,Arial,sans-serif;border:1px solid #27334d;border-radius:14px;padding:14px;box-shadow:0 16px 45px rgba(0,0,0,.45)';
+box.style.cssText='position:fixed;z-index:2147483647;top:64px;right:14px;width:400px;max-width:calc(100vw - 28px);max-height:calc(100vh - 78px);overflow:auto;background:#11182a;color:#edf3ff;font:13px/1.45 system-ui,Segoe UI,Arial,sans-serif;border:1px solid #27334d;border-radius:14px;padding:14px;box-shadow:0 16px 45px rgba(0,0,0,.45)';
 const inp='width:100%;box-sizing:border-box;background:#0a1120;color:#edf3ff;border:1px solid #27334d;border-radius:8px;padding:8px;font:12px ui-monospace,Consolas,monospace';
 const btn='background:#39c792;color:#06140f;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;margin-right:6px';
 const btn2='background:#151f35;color:#edf3ff;border:1px solid #27334d;border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;margin-right:6px';
-box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:15px">Screener batch export</b><span id="sbxx" style="cursor:pointer;color:#92a1bd;font-size:16px" title="Close">✕</span></div>'
+box.innerHTML='<div id="sbhd" style="display:flex;justify-content:space-between;align-items:center;cursor:move;user-select:none;-webkit-user-select:none;touch-action:none" title="Drag to move"><b style="font-size:15px">⠿ Screener batch export</b><span style="white-space:nowrap"><span id="sbmn" style="cursor:pointer;color:#92a1bd;font-size:18px;padding:0 10px" title="Minimise">–</span><span id="sbxx" style="cursor:pointer;color:#92a1bd;font-size:16px;padding:0 2px" title="Close">✕</span></span></div>'
 +'<div style="color:#92a1bd;margin:6px 0 8px">Paste NSE symbols, BSE codes or Screener company links: one per line, or separated by commas or spaces. Each company\'s Excel export is downloaded in turn, a few seconds apart.</div>'
 +'<textarea id="sbt" rows="7" style="'+inp+'" placeholder="PIDILITIND&#10;ICRA&#10;500325"></textarea>'
 +'<div style="margin:8px 0"><label style="margin-right:12px"><input type="radio" name="sbv" value="c" checked> Consolidated</label><label><input type="radio" name="sbv" value="s"> Standalone</label></div>'
@@ -30,7 +30,7 @@ box.innerHTML='<div style="display:flex;justify-content:space-between;align-item
 +'<button id="sbg" style="'+btn+'">Start</button><button id="sbp" style="'+btn2+'" disabled>Stop</button>'
 +'<div id="sbs" style="margin-top:8px;font-weight:700"></div><div id="sbl" style="margin-top:6px;max-height:240px;overflow:auto;font:12px ui-monospace,Consolas,monospace;color:#c9d6ee"></div><div id="sbe" style="margin-top:8px"></div>';
 document.body.appendChild(box);
-S('sbxx').onclick=()=>{box.style.display='none'};
+S('sbxx').onclick=()=>{box.style.display='none'};S('sbmn').onclick=()=>{let m=box.dataset.min!=='1';box.dataset.min=m?'1':'0';[...box.children].forEach((c,i)=>{if(i)c.style.display=m?'none':''});box.style.width=m?'260px':'400px';box.style.overflow=m?'hidden':'auto';S('sbmn').textContent=m?'▢':'–';S('sbmn').title=m?'Restore':'Minimise'};(()=>{let hd=S('sbhd'),sx,sy,bx,by,on=false;const pt=e=>e.touches?e.touches[0]:e;const down=e=>{if(e.target.id==='sbmn'||e.target.id==='sbxx')return;let p=pt(e),r=box.getBoundingClientRect();sx=p.clientX;sy=p.clientY;bx=r.left;by=r.top;on=true;box.style.right='auto';box.style.left=bx+'px';box.style.top=by+'px';e.preventDefault()};const move=e=>{if(!on)return;let p=pt(e),w=box.offsetWidth;let x=Math.max(0,Math.min(window.innerWidth-60,bx+p.clientX-sx)),y=Math.max(0,Math.min(window.innerHeight-40,by+p.clientY-sy));box.style.left=x+'px';box.style.top=y+'px';e.preventDefault()};const up=()=>{on=false};hd.addEventListener('mousedown',down);hd.addEventListener('touchstart',down,{passive:false});document.addEventListener('mousemove',move);document.addEventListener('touchmove',move,{passive:false});document.addEventListener('mouseup',up);document.addEventListener('touchend',up)})();
 let stop=false;S('sbp').onclick=()=>{stop=true;S('sbs').textContent='Stopping after this company…'};
 const log=(t,c)=>{let p=document.createElement('div');p.textContent=t;if(c)p.style.color=c;S('sbl').appendChild(p);S('sbl').scrollTop=1e9};
 const codesFrom=t=>{let out=[];String(t||'').split(/[\s,;|]+/).forEach(x=>{x=x.trim();let m=x.match(/screener\.in\/company\/([^\/?#]+)/i);if(m)x=m[1];x=x.replace(/^NSE:|^BSE:/i,'').replace(/\.(NS|BO)$/i,'');if(/^[A-Za-z0-9&\-_.]{2,25}$/.test(x))out.push(x)});let seen=new Set();return out.map(x=>x.toUpperCase()).filter(x=>!seen.has(x)&&seen.add(x))};
