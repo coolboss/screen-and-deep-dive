@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Screener batch export for Screen & Deep Dive
 // @namespace    screen-and-deep-dive
-// @version      11.3
+// @version      11.5
 // @description  Adds a "Batch export" button on screener.in. Downloads each company's Excel export plus a notes file (pros, cons, shareholding, announcements) into one zip for Screen & Deep Dive. Same code as the app's built-in bookmark.
 // @match        https://www.screener.in/*
 // @match        https://screener.in/*
@@ -116,7 +116,7 @@ S('sbg').onclick=async()=>{
 function addTab(){
  if(document.getElementById('sbtab'))return;
  let t=document.createElement('button');t.id='sbtab';t.type='button';t.textContent='Batch export';t.title='Screen & Deep Dive: export these companies to a zip';
- t.style.cssText='position:fixed;z-index:2147483646;right:14px;bottom:14px;background:#0E6B6B;color:#fff;border:0;border-radius:999px;padding:9px 14px;font:600 13px system-ui,Segoe UI,Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer';
+ t.style.cssText='position:fixed;z-index:2147483646;right:14px;bottom:calc(90px + env(safe-area-inset-bottom));background:#0E6B6B;color:#fff;border:0;border-radius:999px;padding:9px 14px;font:600 13px system-ui,Segoe UI,Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer';
  t.onclick=openPanel;document.body.appendChild(t);
 }
 addTab();
