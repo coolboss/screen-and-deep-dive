@@ -322,7 +322,8 @@ body[data-view="screen"] .batchnav{display:none}
 .choice em{display:block}
 .batchtable button[data-open],#scanResult button[data-open]{border:0;background:transparent;padding:0;color:var(--teal2);font-weight:600;text-align:left;text-decoration:underline;text-decoration-color:#9CC7C5;text-underline-offset:3px;cursor:pointer}
 .batchtable button[data-open]:hover,#scanResult button[data-open]:hover{text-decoration-color:var(--teal2)}
-#rail .horizonbox>.hint{display:none}
+#rail .horizonbox>.hint,.goaltop .horizonbox>.hint{display:none}
+.goaltop{margin:0 0 14px}.goaltop>summary{cursor:pointer;font:600 15px var(--serif);display:flex;flex-wrap:wrap;gap:6px 8px;align-items:baseline;margin:0}.goaltop[open]>summary{margin-bottom:10px}.goaltop .goaltop-k{color:var(--muted,#5b6b76)}.goaltop #goalBlock{border:0;padding:0;margin:0;background:transparent;box-shadow:none}.goaltop #goalBlock>h3{display:none}.goaltop .horizonbox{margin-bottom:10px}
 .batchitem b{white-space:normal}
 #rail .classnote{font-size:12px;margin-top:8px}
 .decisionpill .vbadge{white-space:normal;font-size:14px;line-height:1.3}
@@ -527,9 +528,11 @@ details.notes{background:var(--surface);border:1px solid var(--rule);border-radi
   </details>
  </div>
 </section>
+<details id="goalTop" class="railblock goaltop" style="display:none"><summary><span class="goaltop-k">Your goal</span> <b id="goalTopSummary">12.0% a year · 5 years · alternative 7.00%</b> <span class="hint">tap to change</span></summary></details>
 <div class="layout" id="stage">
 <aside class="side" id="rail" aria-label="Deep dive controls">
- <div class="railblock"><h3>Companies</h3><div class="sortbar"><span class="hint">Company order</span><select id="companySort" onchange="setCompanySort(this.value)"><option value="import">Import order</option><option value="az">Alphabetical A → Z</option><option value="za">Alphabetical Z → A</option></select></div><div id="batchList" class="batchlist"></div><div style="display:none"><button class="btn" id="batchView">Batch comparison</button></div></div>
+ <div class="railblock"><h3>Companies</h3><div class="sortbar"><span class="hint">Company order</span><select id="companySort" onchange="setCompanySort(this.value)"><option value="import">Import order</option><option value="az">Alphabetical A → Z</option><option value="za">Alphabetical Z → A</option><option value="rec">By recommendation</option></select></div><div id="batchList" class="batchlist"></div><div style="display:none"><button class="btn" id="batchView">Batch comparison</button></div></div>
+ <div id="goalHome" style="display:none"></div>
  <div class="railblock" id="goalBlock"><h3>Your goal</h3>
 <div class="horizonbox">
  <div class="sliderhead"><span>Target annualised CAGR</span><b id="targetCagrOut">12.0%</b></div>
@@ -618,16 +621,23 @@ function orderedModelEntries(){
  let arr=models.map((m,i)=>({m,i}));
  if(companySortMode==='az')arr.sort((a,b)=>String(a.m.company||'').localeCompare(String(b.m.company||''),undefined,{sensitivity:'base'}));
  else if(companySortMode==='za')arr.sort((a,b)=>String(b.m.company||'').localeCompare(String(a.m.company||''),undefined,{sensitivity:'base'}));
+ else if(companySortMode==='rec'){arr.forEach(e=>{try{e.r=batchResult(e.m)}catch(x){e.r=null}e.k=recSortKey(e)});arr.sort((a,b)=>a.k[0]-b.k[0]||a.k[1]-b.k[1]||String(a.m.company||'').localeCompare(String(b.m.company||''),undefined,{sensitivity:'base'}))}
  return arr;
 }
+// Order for "By recommendation": the terminal's verdict first (best to worst), then the horizon CAGR;
+// companies without a full result fall back to the quick-grade tier, then quality.
+const REC_RANK={'STRONG ACCUMULATE':0,'STRONG BUY':0,'ACCUMULATE':1,'BUY':1,'ACCUMULATE IN TRANCHES':2,'WATCH FOR ENTRY':3,'WATCH':3,'HOLD':4,'FULLY VALUED':5,'VALUATION NOT RELIABLE':7,'FORENSIC / DO NOT TOUCH':9,'AVOID — FUNDAMENTAL RISK':9};
+function lensTier(g){if(!g)return 4;let q=g.overall.qualityGrade,v=g.verdicts.val.grade;if(q==='Strong'&&/Attractive|Fair/.test(v))return 0;if(q==='Sound'&&/Attractive|Fair/.test(v))return 1;if(/Strong|Sound/.test(q))return 2;return 3}
+function recSortKey(e){let r=e.r;if(r&&r.status==='OK'){let k=REC_RANK[r.verdict];let c=r.opp&&fin(r.opp.expectedCagr)?r.opp.expectedCagr:-9;return [k==null?8:k,-c]}let g=null;try{g=lensGrade(e.m)}catch(x){}return [20+lensTier(g),-(g?g.overall.quality:-1)]}
+function alphaSortRows(rows,get){let d=companySortMode==='az'?1:companySortMode==='za'?-1:0;if(!d)return rows;return rows.slice().sort((a,b)=>d*String(get(a)||'').localeCompare(String(get(b)||''),undefined,{sensitivity:'base'}))}
 function setCompanySort(mode){
- companySortMode=['import','az','za'].includes(mode)?mode:'import';
+ companySortMode=['import','az','za','rec'].includes(mode)?mode:'import';
  let s=$('#companySort');if(s)s.value=companySortMode;
  refreshBatchList();
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='11.6';
+const TERMINAL_VERSION='11.7';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -3278,6 +3288,7 @@ function scanOne(m,c){
 function runScan(){
  let c=scanCfg(),rows=models.map(m=>scanOne(m,c));
  rows.sort((a,b)=>a.tier-b.tier||((b.r&&b.r.opp?b.r.opp.expectedCagr:-9)-(a.r&&a.r.opp?a.r.opp.expectedCagr:-9)));
+ rows=alphaSortRows(rows,x=>x.m.company);
  let counts=SCAN_TIERS.map((_,i)=>rows.filter(x=>x.tier===i).length),idx=m=>models.indexOf(m);
  let noPrices=models.filter(m=>!(m.priceHistory&&m.priceHistory.length)).length;
  let inp=(k,l)=>`<label style="font-size:11px;color:var(--muted)">${l}<input type="number" id="scan_${k}" value="${c[k]}" min="0" max="100" step="1" style="margin-top:3px"></label>`;
@@ -3304,7 +3315,7 @@ function renderHelp(){
  const tbl=(h,rows)=>`<div class="tablewrap"><table><thead><tr>${h.map(x=>`<th style="text-align:left">${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td style="text-align:left;white-space:normal">${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
  $('#main').innerHTML=`<div class="hero"><div><div class="company">Help</div><div class="sector">How to get the best out of the Screen &amp; Deep Dive • version 11 “Triage” (formerly the Independent Fundamental Research Terminal)</div></div><div class="verdict">${back}</div></div>
  <div class="section active">
- ${sec('What this version includes',`<p>This one file is the whole app. Use it and delete older copies (v9.1, v10, v10.1 and the earlier Kite build).</p><ul><li><b>Research:</b> Screener import, the quick grade and pre-screen (Screener Lens is built in), the full valuation, the Action plan, the daily chart and the Second opinion.</li><li><b>Prices:</b> fetched by themselves from free NSE data; no login.</li><li><b>Your holdings (optional):</b> import the holdings file from Zerodha, HDFC Securities or any broker, one per account. No Kite login or API is used. Leave it empty if you only want to research companies.</li><li><b>Valuation review (11.1):</b> the exit P/E now blends in the company's own P/E history inside every engine, so the fair value and the 5-year return agree; banks and NBFCs get a higher exit P/E when they grow faster (the old formula had this backwards); 5-year growth uses a smoothed base year, and one strong or weak year can move it by at most 4 points; commodity, cement, airline and shipping mid-cycle earnings include loss years and the 5-year return starts from mid-cycle earnings; retailers no longer get a 26× floor; holding companies, REITs, insurers and real estate get a 5-year return that converges to their NAV-based value; medical-device cash flow valuation deducts debt.</li><li><b>In short (11.2):</b> every Deep dive opens with three reasons for and three against in plain words, links to check the news, and a two-page print (verdict, reasons and the action plan). The Investments line is now counted as cash by business class unless you type a percentage.</li><li><b>Outside the statements (11.3):</b> the Screener bookmark now also saves a small notes file per company (Screener's pros and cons, shareholding, pledge, recent announcements, the latest concall and credit rating). Drop the same zip on Get data and the Deep dive shows them under <i>From Screener's page</i>. A pledge of 20% or more, a promoter stake falling 3 points, or a price down 40% in a year now holds the verdict back to buying in small slices until you have read why.</li></ul>`)}
+ ${sec('What this version includes',`<p>This one file is the whole app. Use it and delete older copies (v9.1, v10, v10.1 and the earlier Kite build).</p><ul><li><b>Research:</b> Screener import, the quick grade and pre-screen (Screener Lens is built in), the full valuation, the Action plan, the daily chart and the Second opinion.</li><li><b>Prices:</b> fetched by themselves from free NSE data; no login.</li><li><b>Your holdings (optional):</b> import the holdings file from Zerodha, HDFC Securities or any broker, one per account. No Kite login or API is used. Leave it empty if you only want to research companies.</li><li><b>Valuation review (11.1):</b> the exit P/E now blends in the company's own P/E history inside every engine, so the fair value and the 5-year return agree; banks and NBFCs get a higher exit P/E when they grow faster (the old formula had this backwards); 5-year growth uses a smoothed base year, and one strong or weak year can move it by at most 4 points; commodity, cement, airline and shipping mid-cycle earnings include loss years and the 5-year return starts from mid-cycle earnings; retailers no longer get a 26× floor; holding companies, REITs, insurers and real estate get a 5-year return that converges to their NAV-based value; medical-device cash flow valuation deducts debt.</li><li><b>In short (11.2):</b> every Deep dive opens with three reasons for and three against in plain words, links to check the news, and a two-page print (verdict, reasons and the action plan). The Investments line is now counted as cash by business class unless you type a percentage.</li><li><b>Outside the statements (11.3):</b> the Screener bookmark now also saves a small notes file per company (Screener's pros and cons, shareholding, pledge, recent announcements, the latest concall and credit rating). Drop the same zip on Get data and the Deep dive shows them under <i>From Screener's page</i>. A pledge of 20% or more, a promoter stake falling 3 points, or a price down 40% in a year now holds the verdict back to buying in small slices until you have read why.</li><li><b>Your goal, everywhere (11.7):</b> the target CAGR, holding period and alternative-return sliders now sit in a <i>Your goal</i> strip at the top of the Screen page and, on a phone, at the top of the Deep dive (tap it to open). Companies can be sorted <b>by recommendation</b> (best verdict first, then horizon CAGR; unclassified companies by quick grade) on the Screen page and in the Companies list; the pre-screen and scan tables follow the A → Z / Z → A choice too.</li></ul>`)}
  ${sec('How the app is laid out',`<p>Three steps across the top, used in order.</p><ol><li><b>Get data.</b> Drop Screener Excel exports (one, many, a zip or a folder), or use the Screener batch export bookmark to download a whole list at once. Price and expert settings live here too.</li><li><b>Screen.</b> All loaded companies in one table. Run the <b>Quick pre-screen</b> first: it grades every company on its statements and needs no setup. Then run the <b>Investment-grade scan</b> on what is left; it needs each company's business type confirmed. Click a company name to open it.</li><li><b>Deep dive.</b> One company. The sheet at the top gives the plain answer: what kind of business at what price, what to do if you are buying or already own it, and four numbers (price, fair value, return a year, buy at or below). Your goal (target return and holding period) and the business type sit on the left. Below, the detail is grouped into Decide, Business, Price and chart, and Details.</li></ol><p><b>Rule:</b> the quick grade and pre-screen only find candidates; the Action plan and Second opinion decide.</p>`)}
  ${sec('Your holdings (optional)',`<p>Holdings are optional: the app does all its research without them. To add them, go to the Get data page, under <b>Optional: add your holdings</b>, type an account name (for example "Rajesh (Zerodha)" or "Sangeeta (Zerodha)") and choose that account's holdings file. Zerodha: the CSV from Holdings on kite.zerodha.com, or the Excel file from Portfolio, Holdings on console.zerodha.com (which also gives the shares held over 12 months). Other brokers such as HDFC Securities: their holdings download in Excel or CSV; company names are matched to NSE symbols. Import each account separately; the same name replaces the older file. Mutual funds, ETFs and gold bonds are left out.</p><p>Then the Action plan shows your shares and average cost per account and together, and gives holder advice on the combined average (tax is per person). The Screen page lists every holding with what to do, action first, and <b>Copy symbols not yet loaded</b> gives you the list to paste into the Screener bookmark. A price you type in the Action plan overrides the imported cost for that company. Everything stays in this browser.</p>`)}
  ${sec('Quick start',`<ol><li><b>Open the file in a real browser</b> (Chrome or Edge on a computer is best) or from your Netlify site. Preview windows in chat or mail apps block the internet, so prices cannot load there.</li><li><b>Get data:</b> drop one or many Screener .xlsx files on the box.</li><li><b>Confirm the business type</b> if asked. About 850 known companies are classified at once.</li><li><b>Let prices load:</b> the NSE symbol is found from the name and daily prices arrive in seconds. If not, type the symbol in the Price data box on the Daily chart page.</li><li><b>Read the sheet at the top of the Deep dive,</b> then open Action plan for entry and exit prices and Second opinion for the chart. Save a decision snapshot (under More) if you act.</li></ol>`)}
@@ -3456,9 +3467,10 @@ function quickBanner(m){let g=lensGrade(m);if(!g)return '';return `<div class="f
 // Quick pre-screen of the whole batch on the Screener Lens tests only (fast, no classes needed)
 function runQuickScan(){
  if(!models.length){showGlobalError('Nothing to scan yet.','Import Screener exports first.','warn');return}
- const tierOf=g=>{if(!g)return 4;let q=g.overall.qualityGrade,v=g.verdicts.val.grade;if(q==='Strong'&&/Attractive|Fair/.test(v))return 0;if(q==='Sound'&&/Attractive|Fair/.test(v))return 1;if(/Strong|Sound/.test(q))return 2;return 3};
+ const tierOf=lensTier;
  const T=[['SHORTLIST','v-buy','Strong business at an attractive or fair price'],['SECOND LOOK','v-acc','Sound business at an attractive or fair price'],['GOOD BUSINESS, PRICEY','v-hold','Strong or sound business, but expensive'],['SKIP','v-avoid','Mixed or weak on the statement tests'],['NO QUICK GRADE','v-watch','Not a readable Screener export']];
  let rows=models.map(m=>{let g=lensGrade(m);return {m,g,t:tierOf(g)}}).sort((a,b)=>a.t-b.t||((b.g?b.g.overall.quality:-1)-(a.g?a.g.overall.quality:-1))||((b.g?b.g.verdicts.val.score:-1)-(a.g?a.g.verdicts.val.score:-1)));
+ rows=alphaSortRows(rows,x=>x.m.company);
  let counts=T.map((_,i)=>rows.filter(x=>x.t===i).length),idx=m=>models.indexOf(m);
  let html=`<div class="panel" id="scanResult" style="margin-bottom:14px"><h4>Quick pre-screen of this batch (${models.length} compan${models.length===1?'y':'ies'})</h4><div class="hint" style="margin-bottom:8px">Screener Lens tests only: profit &amp; loss, balance sheet and cash flow against sector benchmarks, plus a valuation score. Needs no business class, so it suits big batches. Shortlisted names then get the full valuation and the investment-grade scan.</div>
  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><button class="btn primary" onclick="runScan()">Run the full investment-grade scan</button>${counts.map((n,i)=>`<span class="vbadge ${T[i][1]}" title="${T[i][2]}">${T[i][0]}: ${n}</span>`).join('')}</div>
@@ -4508,11 +4520,12 @@ function updateHorizonControlLabels(){
  if($('#targetCagrOut')&&t)$('#targetCagrOut').textContent=(+t.value).toFixed(1)+'%';
  if($('#holdMonthsOut')&&h)$('#holdMonthsOut').textContent=horizonLabel(+h.value);
  if($('#altReturnOut')&&a)$('#altReturnOut').textContent=(+a.value).toFixed(2)+'%';
+ let gs=$('#goalTopSummary');if(gs&&t&&h&&a)gs.textContent=`${(+t.value).toFixed(1)}% a year · ${horizonLabel(+h.value)} · alternative ${(+a.value).toFixed(2)}%`;
  let tx=$('#taxLensOut');if(tx&&h){let lt=+h.value>12;tx.textContent=lt?'LTCG':'STCG';tx.classList.toggle('taxlt',lt);tx.classList.toggle('taxst',!lt)}
 }
 function saveHorizonPrefs(){try{localStorage.setItem(HORIZON_PREF_KEY,JSON.stringify({targetCagr:+$('#targetCagr').value,holdMonths:+$('#holdMonths').value,altReturn:+$('#altReturn').value,altTax:+$('#altTax').value,stcgTax:+$('#stcgTax').value,ltcgTax:+$('#cgTax').value,divTax:+$('#divTax').value}))}catch(e){}}
 function loadHorizonPrefs(){try{let raw=localStorage.getItem(HORIZON_PREF_KEY)||localStorage.getItem('ifrt_v821_horizon_prefs')||localStorage.getItem('ifrt_v82_horizon_prefs')||'{}',p=JSON.parse(raw);if(fin(+p.targetCagr))$('#targetCagr').value=clamp(+p.targetCagr,10,40);if(fin(+p.holdMonths))$('#holdMonths').value=clamp(Math.round(+p.holdMonths),12,120);if(fin(+p.altReturn))$('#altReturn').value=clamp(+p.altReturn,3,15);if(fin(+p.altTax))$('#altTax').value=clamp(+p.altTax,0,60);if(fin(+p.stcgTax))$('#stcgTax').value=clamp(+p.stcgTax,0,60);if(fin(+p.ltcgTax))$('#cgTax').value=clamp(+p.ltcgTax,0,60);if(fin(+p.divTax))$('#divTax').value=clamp(+p.divTax,0,60)}catch(e){}updateHorizonControlLabels()}
-function scheduleHorizonRender(){updateHorizonControlLabels();saveHorizonPrefs();if(!model)return;if(scheduleHorizonRender.pending)return;scheduleHorizonRender.pending=true;requestAnimationFrame(()=>{scheduleHorizonRender.pending=false;render();refreshBatchList()})}
+function scheduleHorizonRender(){updateHorizonControlLabels();saveHorizonPrefs();if(batchMode&&models.length){clearTimeout(scheduleHorizonRender.t);scheduleHorizonRender.t=setTimeout(()=>{renderBatch();refreshBatchList()},400);return}if(!model)return;if(scheduleHorizonRender.pending)return;scheduleHorizonRender.pending=true;requestAnimationFrame(()=>{scheduleHorizonRender.pending=false;render();refreshBatchList()})}
 function assumptionLedger(m,s,v,mos){
  let auto=$('#autoAssumptions').checked,ag=autoGrowth(v.profile,s),rows=[];
  const add=(name,observed,adopted,source)=>rows.push({name,observed,adopted,source});
@@ -4620,8 +4633,8 @@ function printAllValuations(){
 
 function renderBatch(){
  batchMode=true;
- let rows=orderedModelEntries().map(({m,i})=>{
-   let r=batchResult(m);
+ let rows=orderedModelEntries().map(({m,i,r})=>{
+   r=r||batchResult(m);
    if(r.status!=='OK')return `<tr><td><button class="btn" data-open="${i}">${escapeHtml(m.company)}</button></td><td>${r.pi.className||'—'}</td><td>${quickCell(m)}</td><td colspan="10" class="${r.status==='Needs classification'?'statusreq':'statusblock'}">${r.status}</td></tr>`;
    return `<tr>
     <td><button class="btn" data-open="${i}">${escapeHtml(m.company)}</button></td>
@@ -4636,7 +4649,7 @@ function renderBatch(){
  <div class="hero"><div><div class="company">Batch Comparison</div><div class="sector">${models.length} compan${models.length===1?'y':'ies'} • version 11 integrated architecture with the Second Opinion weekly view • click a company for full analysis</div></div></div>
  <div class="section active">
   <div id="scanBox"><button class="btn primary" onclick="runScan()" style="margin-bottom:12px">Scan this batch for investment-grade companies</button> <button class="btn" onclick="runQuickScan()" style="margin-bottom:12px">Quick pre-screen (no classes needed)</button></div>
-  <div class="batchsort"><span class="hint">Sort companies:</span><button class="btn" data-sort="import">Import order</button><button class="btn" data-sort="az">A → Z</button><button class="btn" data-sort="za">Z → A</button></div>
+  <div class="batchsort"><span class="hint">Sort companies:</span><button class="btn" data-sort="import">Import order</button><button class="btn" data-sort="az">A → Z</button><button class="btn" data-sort="za">Z → A</button><button class="btn" data-sort="rec">By recommendation</button></div>
   <div class="tablewrap"><table class="batchtable"><thead><tr>
    <th>Company</th><th>Classification</th><th>Quick grade</th><th class="num">Price</th><th>Action</th><th class="num">Horizon CAGR</th>
    <th class="num">Req. MoS</th><th class="num">Buy at or below</th><th class="num">Fundamental</th>
@@ -5193,8 +5206,19 @@ const UI_GROUPS=[
  ['Price and chart',[['valuation','Valuation'],['technical','Daily chart'],['secondop','Second opinion'],['pricectx','Price history']]],
  ['Details',[['integrity','Data checks'],['waccTab','Discount rate']]]
 ];
+// The goal sliders live in the left rail on a wide Deep dive. The rail is hidden on the Screen page and sits
+// at the bottom on a phone, so there the block moves to a collapsible strip above the page instead.
+function placeGoalBlock(){
+ let gb=$('#goalBlock'),top=$('#goalTop'),home=$('#goalHome');if(!gb||!top||!home)return;
+ let v=document.body.dataset.view,narrow=window.matchMedia('(max-width:1100px)').matches;
+ let wantTop=v==='screen'||(v==='dive'&&narrow);
+ if(wantTop){if(gb.parentNode!==top)top.appendChild(gb);top.style.display=''}
+ else{if(gb.parentNode===top)home.after(gb);top.style.display='none'}
+ try{updateHorizonControlLabels()}catch(e){}
+}
+window.addEventListener('resize',()=>{clearTimeout(placeGoalBlock.t);placeGoalBlock.t=setTimeout(placeGoalBlock,120)});
 function uiSetView(v){
- uiView=v;document.body.dataset.view=v;
+ uiView=v;document.body.dataset.view=v;placeGoalBlock();
  document.querySelectorAll('.step').forEach(b=>{b.classList.toggle('active',b.dataset.view===v);b.setAttribute('aria-current',b.dataset.view===v?'page':'false')});
  uiSteps();
 }
@@ -5280,7 +5304,7 @@ function uiAfterDive(){
  main.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTimeout(paint,0)));
  paint();
 }
-function uiToGoal(){let g=document.getElementById('goalBlock');if(g){g.scrollIntoView({behavior:'smooth',block:'center'});g.style.boxShadow='0 0 0 3px #9CC7C5';setTimeout(()=>g.style.boxShadow='',1600);let r=document.getElementById('targetCagr');if(r)r.focus({preventScroll:true})}}
+function uiToGoal(){let g=document.getElementById('goalBlock');if(g){let top=document.getElementById('goalTop');if(top&&g.parentNode===top)top.open=true;g.scrollIntoView({behavior:'smooth',block:'center'});g.style.boxShadow='0 0 0 3px #9CC7C5';setTimeout(()=>g.style.boxShadow='',1600);let r=document.getElementById('targetCagr');if(r)r.focus({preventScroll:true})}}
 function uiLabelTables(root){(root||document).querySelectorAll('table.batchtable').forEach(t=>{let hs=[...t.querySelectorAll('thead th')].map(th=>th.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(i>0&&hs[i]&&!td.hasAttribute('colspan'))td.setAttribute('data-label',hs[i])}))})}
 function uiAfterScreen(){
  let main=$('#main');if(!main)return;
