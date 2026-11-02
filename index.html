@@ -685,7 +685,7 @@ function setCompanySort(mode){
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='12.9';
+const TERMINAL_VERSION='12.10';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -5604,10 +5604,13 @@ Return over 1year < 0 AND
 Average return on capital employed 5Years > 15 AND
 Debt to equity < 1`,cap:1000,c:'Index inclusion and passive funds also raise institutional holdings. Check whether the buying came from active funds.'},
  {id:'C8',g:'Contrarian',n:'Retail giving up: shareholder count falling',q:`Number of Shareholders < Number of Shareholders preceding quarter AND
-Return over 1year < -15 AND
+Return over 1year < -25 AND
 Average return on capital employed 5Years > 15 AND
+Median return on capital employed 10Years > 12 AND
+Piotroski score >= 5 AND
+Pledged percentage < 5 AND
 Cash from operations last year > 0 AND
-Debt to equity < 0.7`,c:'Falling shareholder counts after a long fall often mark the last sellers leaving. Confirm the business is intact in the last two quarters; the count also falls when a stock is simply forgotten.'},
+Debt to equity < 0.7`,c:'Calibrated Nov 2026: about 50 companies. Falling shareholder counts after a long fall often mark the last sellers leaving. Confirm the business is intact in the last two quarters; the count also falls when a stock is simply forgotten.'},
  // ---- Momentum
  {id:'M1',g:'Momentum',n:'Sound business near a breakout',q:`Return on capital employed > 15 AND
 Average return on capital employed 5Years > 15 AND
