@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Screener batch export for Screen & Deep Dive
 // @namespace    screen-and-deep-dive
-// @version      12.3
+// @version      12.4
 // @description  Adds a "Batch export" button on screener.in. Downloads each company's Excel export plus a notes file (pros, cons, shareholding, announcements) into one zip for Screen & Deep Dive. Same code as the app's built-in bookmark.
 // @match        https://www.screener.in/*
 // @match        https://screener.in/*
@@ -101,13 +101,24 @@ S('sbg').onclick=async()=>{
  stop=false;S('sbg').disabled=true;S('sbp').disabled=false;S('sbl').innerHTML='';S('sbe').innerHTML='';
  for(let i=0;i<codes.length&&!stop;i++){
   S('sbs').textContent='Exporting '+(i+1)+' of '+codes.length+': '+codes[i]+'…';
-  try{let f=await exportOne(codes[i],cons);done.push(f);if(f.notes)done.push(f.notes);log('✓ '+f.name,'#65e6ad');if(!z){save(new Blob([f.data]),f.name);if(f.notes){await wait(400);save(new Blob([f.notes.data],{type:'application/json'}),f.notes.name)}}}
-  catch(e){failed.push(codes[i]);log('✗ '+codes[i]+': '+e.message,'#ff9696');if(/too many requests|logged in|logged out|limit/i.test(e.message)){log('Stopped: fix the problem above, then run the failed ones again.','#f4c95d');break}}
+  let f=null,err=null;
+  for(let tryN=0;tryN<2&&!f;tryN++){try{f=await exportOne(codes[i],cons)}catch(e){err=e;if(/too many requests|logged in|logged out|limit/i.test(e.message))break;if(tryN===0){log('… '+codes[i]+': '+e.message+' — trying once more','#f4c95d');await wait(Math.max(gap,4000))}}}
+  if(f){done.push(f);if(f.notes)done.push(f.notes);log('✓ '+f.name,'#65e6ad');if(!z){save(new Blob([f.data]),f.name);if(f.notes){await wait(400);save(new Blob([f.notes.data],{type:'application/json'}),f.notes.name)}}}
+  else{failed.push({code:codes[i],why:err?err.message:'unknown'});log('✗ '+codes[i]+': '+(err?err.message:'unknown'),'#ff9696');if(err&&/too many requests|logged in|logged out|limit/i.test(err.message)){log('Stopped: fix the problem above, then run the failed ones again.','#f4c95d');break}}
   if(i<codes.length-1&&!stop)await wait(gap+Math.random()*800);
  }
  if(z&&done.length){let d=new Date(),stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');save(zip(done),'screener-exports-'+stamp+'.zip')}
  S('sbs').textContent='Done: '+done.filter(f=>/\.xlsx$/i.test(f.name)).length+' downloaded (each with a notes file: pros, cons, shareholding, announcements)'+(failed.length?', '+failed.length+' failed':'')+(z&&done.length?'. Drop the zip file on the Get data page.':'.');
- if(failed.length){let b=document.createElement('button');b.textContent='Put the failed ones back in the box';b.style.cssText=btn2;b.onclick=()=>{S('sbt').value=failed.join('\n')};S('sbe').appendChild(b)}
+ if(failed.length){
+  let w=document.createElement('div');w.style.cssText='margin:8px 0;padding:10px;border:1px solid #6b3a3a;border-radius:10px;background:#1d1420';
+  w.innerHTML='<b style="color:#ff9696">'+failed.length+' not downloaded.</b> <span style="color:#92a1bd">Open each one and press Export to Excel yourself, or put them back in the box and press Start again with a longer gap.</span>';
+  let ul=document.createElement('div');ul.style.cssText='margin-top:6px;font:12px ui-monospace,Consolas,monospace;line-height:1.7';
+  failed.forEach(x=>{let p=document.createElement('div');let a=document.createElement('a');a.href='https://www.screener.in/company/'+encodeURIComponent(x.code)+'/'+(cons?'consolidated/':'');a.target='_blank';a.rel='noopener';a.textContent=x.code;a.style.cssText='color:#8fd3ff;font-weight:700';p.appendChild(a);p.appendChild(document.createTextNode(' — '+x.why));ul.appendChild(p)});
+  w.appendChild(ul);
+  let row=document.createElement('div');row.style.marginTop='8px';
+  let c=document.createElement('button');c.textContent='Copy the names';c.style.cssText=btn2;c.onclick=()=>{let t=failed.map(x=>x.code).join('\n');let ok=()=>{c.textContent='Copied'};if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,()=>{S('sbt').value=t;c.textContent='Put in the box instead'});else{S('sbt').value=t;c.textContent='Put in the box instead'}};
+  let b=document.createElement('button');b.textContent='Put the failed ones back in the box';b.style.cssText=btn2;b.onclick=()=>{S('sbt').value=failed.map(x=>x.code).join('\n');S('sbd').value=Math.min(30,(+S('sbd').value||3)+3)};
+  row.appendChild(c);row.appendChild(b);w.appendChild(row);S('sbe').appendChild(w)}
  S('sbg').disabled=false;S('sbp').disabled=true;
 };
 
