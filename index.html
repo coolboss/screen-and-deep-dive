@@ -685,7 +685,7 @@ function setCompanySort(mode){
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='12.11';
+const TERMINAL_VERSION='12.12';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -3363,7 +3363,7 @@ function renderHelp(){
  const tbl=(h,rows)=>`<div class="tablewrap"><table><thead><tr>${h.map(x=>`<th style="text-align:left">${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td style="text-align:left;white-space:normal">${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
  $('#main').innerHTML=`<div class="hero"><div><div class="company">Help</div><div class="sector">How to get the best out of the Screen &amp; Deep Dive • version 12 “Triage” (formerly the Independent Fundamental Research Terminal)</div></div><div class="verdict">${back}</div></div>
  <div class="section active">
- ${sec('What this version includes',`<p>This one file is the whole app. Use it and delete older copies (v9.1, v10, v10.1 and the earlier Kite build).</p><ul><li><b>Research:</b> Screener import, the quick grade and pre-screen (Screener Lens is built in), the full valuation, the Action plan, the daily chart and the Second opinion.</li><li><b>Prices:</b> fetched by themselves from free NSE data; no login.</li><li><b>Your holdings (optional):</b> import the holdings file from Zerodha, HDFC Securities or any broker, one per account. No Kite login or API is used. Leave it empty if you only want to research companies.</li><li><b>Valuation review (11.1):</b> the exit P/E now blends in the company's own P/E history inside every engine, so the fair value and the 5-year return agree; banks and NBFCs get a higher exit P/E when they grow faster (the old formula had this backwards); 5-year growth uses a smoothed base year, and one strong or weak year can move it by at most 4 points; commodity, cement, airline and shipping mid-cycle earnings include loss years and the 5-year return starts from mid-cycle earnings; retailers no longer get a 26× floor; holding companies, REITs, insurers and real estate get a 5-year return that converges to their NAV-based value; medical-device cash flow valuation deducts debt.</li><li><b>In short (11.2):</b> every Deep dive opens with three reasons for and three against in plain words, links to check the news, and a two-page print (verdict, reasons and the action plan). The Investments line is now counted as cash by business class unless you type a percentage.</li><li><b>Outside the statements (11.3):</b> the Screener bookmark now also saves a small notes file per company (Screener's pros and cons, shareholding, pledge, recent announcements, the latest concall and credit rating). Drop the same zip on Get data and the Deep dive shows them under <i>From Screener's page</i>. A pledge of 20% or more, a promoter stake falling 3 points, or a price down 40% in a year now holds the verdict back to buying in small slices until you have read why.</li><li><b>Your goal, everywhere (11.7):</b> the target CAGR, holding period and alternative-return sliders now sit in a <i>Your goal</i> strip at the top of the Screen page and, on a phone, at the top of the Deep dive (tap it to open). Companies can be sorted <b>by recommendation</b> (best verdict first, then horizon CAGR; unclassified companies by quick grade) on the Screen page and in the Companies list; the pre-screen and scan tables follow the A → Z / Z → A choice too. The full batch report (11.8) has a <i>Back to the app</i> button at the top, so it can be closed on a phone. Phone instructions (11.9) now cover Android with Firefox and Tampermonkey as well as the iPhone.</li><li><b>Find companies (12.0):</b> the Get data page now opens with a Screener query writer. Pick a goal (steady compounders, good business at a low price, fast growers, dividend income, cash-rich, quality knocked down, turnarounds, breakout, banks and NBFCs), set the smallest company and how strict, and the app writes a query that uses your target return and holding period. Or pick one of 28 ready-made screens. Every field name is checked against Screener's own ratio list, and misspellings are flagged before you paste. Copy it, run it on screener.in, then Batch export the results. Your own edits can be saved in this browser.</li><li><b>Batch export (12.4):</b> a company that fails is tried once more after a pause; the ones still missing are listed at the end with a link to each company's Screener page and a Copy button, so you can export them by hand or put them back in the box with a longer gap. The gap between companies now scales with the list (12.5): 3 seconds up to 30 companies, 5 up to 80, 7 beyond; type your own number to override. The full batch report has a Share button (12.6) for phones: it hands the report to the share sheet, and the bar explains the Share → Options → PDF route. Two reports under More (12.7): <i>Screen summary</i>, one row per company with verdict, return, buy price and the top reason for and against; and the <i>Full deep-dive report</i> with every page.</li></ul>`)}
+ ${sec('What this version includes',`<p>This one file is the whole app. Use it and delete older copies (v9.1, v10, v10.1 and the earlier Kite build).</p><ul><li><b>Research:</b> Screener import, the quick grade and pre-screen (Screener Lens is built in), the full valuation, the Action plan, the daily chart and the Second opinion.</li><li><b>Prices:</b> fetched by themselves from free NSE data; no login.</li><li><b>Your holdings (optional):</b> import the holdings file from Zerodha, HDFC Securities or any broker, one per account. No Kite login or API is used. Leave it empty if you only want to research companies.</li><li><b>Valuation review (11.1):</b> the exit P/E now blends in the company's own P/E history inside every engine, so the fair value and the 5-year return agree; banks and NBFCs get a higher exit P/E when they grow faster (the old formula had this backwards); 5-year growth uses a smoothed base year, and one strong or weak year can move it by at most 4 points; commodity, cement, airline and shipping mid-cycle earnings include loss years and the 5-year return starts from mid-cycle earnings; retailers no longer get a 26× floor; holding companies, REITs, insurers and real estate get a 5-year return that converges to their NAV-based value; medical-device cash flow valuation deducts debt.</li><li><b>In short (11.2):</b> every Deep dive opens with three reasons for and three against in plain words, links to check the news, and a two-page print (verdict, reasons and the action plan). The Investments line is now counted as cash by business class unless you type a percentage.</li><li><b>Outside the statements (11.3):</b> the Screener bookmark now also saves a small notes file per company (Screener's pros and cons, shareholding, pledge, recent announcements, the latest concall and credit rating). Drop the same zip on Get data and the Deep dive shows them under <i>From Screener's page</i>. A pledge of 20% or more, a promoter stake falling 3 points, or a price down 40% in a year now holds the verdict back to buying in small slices until you have read why.</li><li><b>Your goal, everywhere (11.7):</b> the target CAGR, holding period and alternative-return sliders now sit in a <i>Your goal</i> strip at the top of the Screen page and, on a phone, at the top of the Deep dive (tap it to open). Companies can be sorted <b>by recommendation</b> (best verdict first, then horizon CAGR; unclassified companies by quick grade) on the Screen page and in the Companies list; the pre-screen and scan tables follow the A → Z / Z → A choice too. The full batch report (11.8) has a <i>Back to the app</i> button at the top, so it can be closed on a phone. Phone instructions (11.9) now cover Android with Firefox and Tampermonkey as well as the iPhone.</li><li><b>Find companies (12.0):</b> the Get data page now opens with a Screener query writer. Pick a goal (steady compounders, good business at a low price, fast growers, dividend income, cash-rich, quality knocked down, turnarounds, breakout, banks and NBFCs), set the smallest company and how strict, and the app writes a query that uses your target return and holding period. Or pick one of 28 ready-made screens. Every field name is checked against Screener's own ratio list, and misspellings are flagged before you paste. Copy it, run it on screener.in, then Batch export the results. Your own edits can be saved in this browser. Each ready-made screen says what holding period and return it suits, the dropdown stars the ones that fit your goal (12.12), and a goal tile warns when your sliders do not match the kind of screen (a breakout screen with a ten-year hold, say).</li><li><b>Batch export (12.4):</b> a company that fails is tried once more after a pause; the ones still missing are listed at the end with a link to each company's Screener page and a Copy button, so you can export them by hand or put them back in the box with a longer gap. The gap between companies now scales with the list (12.5): 3 seconds up to 30 companies, 5 up to 80, 7 beyond; type your own number to override. The full batch report has a Share button (12.6) for phones: it hands the report to the share sheet, and the bar explains the Share → Options → PDF route. Two reports under More (12.7): <i>Screen summary</i>, one row per company with verdict, return, buy price and the top reason for and against; and the <i>Full deep-dive report</i> with every page.</li></ul>`)}
  ${sec('How the app is laid out',`<p>Three steps across the top, used in order.</p><ol><li><b>Get data.</b> Start with <b>Find companies</b> if you do not yet have a list: it writes a Screener query for your goal. Then drop Screener Excel exports (one, many, a zip or a folder), or use the Screener batch export bookmark to download a whole list at once. Price and expert settings live here too.</li><li><b>Screen.</b> All loaded companies in one table. Run the <b>Quick pre-screen</b> first: it grades every company on its statements and needs no setup. Then run the <b>Investment-grade scan</b> on what is left; it needs each company's business type confirmed. Click a company name to open it.</li><li><b>Deep dive.</b> One company. The sheet at the top gives the plain answer: what kind of business at what price, what to do if you are buying or already own it, and four numbers (price, fair value, return a year, buy at or below). Your goal (target return and holding period) and the business type sit on the left. Below, the detail is grouped into Decide, Business, Price and chart, and Details.</li></ol><p><b>Rule:</b> the quick grade and pre-screen only find candidates; the Action plan and Second opinion decide.</p>`)}
  ${sec('Your holdings (optional)',`<p>Holdings are optional: the app does all its research without them. To add them, go to the Get data page, under <b>Optional: add your holdings</b>, type an account name (for example "Rajesh (Zerodha)" or "Sangeeta (Zerodha)") and choose that account's holdings file. Zerodha: the CSV from Holdings on kite.zerodha.com, or the Excel file from Portfolio, Holdings on console.zerodha.com (which also gives the shares held over 12 months). Other brokers such as HDFC Securities: their holdings download in Excel or CSV; company names are matched to NSE symbols. Import each account separately; the same name replaces the older file. Mutual funds, ETFs and gold bonds are left out.</p><p>Then the Action plan shows your shares and average cost per account and together, and gives holder advice on the combined average (tax is per person). The Screen page lists every holding with what to do, action first, and <b>Copy symbols not yet loaded</b> gives you the list to paste into the Screener bookmark. A price you type in the Action plan overrides the imported cost for that company. Everything stays in this browser.</p>`)}
  ${sec('Quick start',`<ol><li><b>Open the file in a real browser</b> (Chrome or Edge on a computer is best) or from your Netlify site. Preview windows in chat or mail apps block the internet, so prices cannot load there.</li><li><b>Get data:</b> drop one or many Screener .xlsx files on the box.</li><li><b>Confirm the business type</b> if asked. About 850 known companies are classified at once.</li><li><b>Let prices load:</b> the NSE symbol is found from the name and daily prices arrive in seconds. If not, type the symbol in the Price data box on the Daily chart page.</li><li><b>Read the sheet at the top of the Deep dive,</b> then open Action plan for entry and exit prices and Second opinion for the chart. Save a decision snapshot (under More) if you act.</li></ol>`)}
@@ -5457,64 +5457,64 @@ uiInit();
 const FQ_FLOOR=cap=>`Market Capitalization > ${cap} AND\nIs not SME`;
 const FQ_PRESETS=[
  // ---- Value
- {id:'V1',g:'Value',n:'Quality at low EV/EBITDA',q:`EVEBITDA > 0 AND
+ {id:'V1',h:[3,7],r:[14,20],g:'Value',n:'Quality at low EV/EBITDA',q:`EVEBITDA > 0 AND
 EVEBITDA < 10 AND
 Average return on capital employed 5Years > 15 AND
 Debt to equity < 1 AND
 Interest Coverage Ratio > 4 AND
 Piotroski score >= 6`,c:'Watch for cyclicals at peak margins (commodities, sugar, steel). Check whether EBITDA turns into operating cash.'},
- {id:'V2',g:'Value',n:'Below Graham Number, with good ROCE',q:`Graham Number > 0 AND
+ {id:'V2',h:[3,7],r:[12,18],g:'Value',n:'Below Graham Number, with good ROCE',q:`Graham Number > 0 AND
 Current price < Graham Number AND
 Average return on capital employed 5Years > 12 AND
 Debt to equity < 0.5 AND
 Altman Z Score > 3`,c:'Graham Number rewards a large book value. Check that book value is not inflated by revaluations or stale receivables.'},
- {id:'V3',g:'Value',n:'Low P/B with a real ROE',q:`Price to book value > 0 AND
+ {id:'V3',h:[3,10],r:[10,16],g:'Value',n:'Low P/B with a real ROE',q:`Price to book value > 0 AND
 Price to book value < 1.5 AND
 Average return on equity 5Years > 15 AND
 Return on equity > 12 AND
 Debt to equity < 1`,c:'PSU and holding companies dominate this list. Ask why the ROE has not shown up in the price. For banks and NBFCs delete the Debt to equity line.'},
- {id:'V4',g:'Value',n:'High free-cash-flow yield',q:`Price to Free Cash Flow > 0 AND
+ {id:'V4',h:[3,7],r:[12,18],g:'Value',n:'High free-cash-flow yield',q:`Price to Free Cash Flow > 0 AND
 Price to Free Cash Flow < 15 AND
 Free cash flow 5years > 0 AND
 Cash from operations last year > 0 AND
 Cash from operations preceding year > 0 AND
 Debt to equity < 1`,c:'FCF jumps when capex pauses or working capital is released once. Check the cash-flow statement year by year.'},
- {id:'V5',g:'Value',n:'Magic formula: earnings yield plus ROCE',q:`Earnings yield > 10 AND
+ {id:'V5',h:[3,5],r:[14,20],g:'Value',n:'Magic formula: earnings yield plus ROCE',q:`Earnings yield > 10 AND
 Return on capital employed > 20 AND
 Average return on capital employed 5Years > 18 AND
 Debt to equity < 1 AND
 Other income < 0.3 * Profit after tax`,cap:1000,c:'Sort by the Earnings yield column on Screener. The other-income line removes treasury-income profits.'},
- {id:'V6',g:'Value',n:'Net-cash companies',q:`Cash Equivalents > Debt AND
+ {id:'V6',h:[3,10],r:[10,15],g:'Value',n:'Net-cash companies',q:`Cash Equivalents > Debt AND
 Cash Equivalents > 0.3 * Market Capitalization AND
 Median return on capital employed 5Years > 12 AND
 Cash from operations last year > 0 AND
 Contingent liabilities < 0.3 * Market Capitalization`,c:'Cash Equivalents probably counts only cash and bank balances, so liquid funds under Investments are missed. Ask why the cash sits idle.'},
- {id:'V7',g:'Value',n:'Cheap against its own history',q:`Price to Earning > 0 AND
+ {id:'V7',h:[2,5],r:[14,22],g:'Value',n:'Cheap against its own history',q:`Price to Earning > 0 AND
 Price to Earning < Historical PE 5Years * 0.7 AND
 Price to book value < Historical PBV 5Years * 0.8 AND
 Median return on capital employed 10Years > 15 AND
 Profit growth 3Years > 0 AND
 Debt to equity < 0.7`,cap:1000,c:'A lower multiple is fair if growth has slowed for good. Compare the last 3 years of growth with the 5- and 10-year figures.'},
- {id:'V8',g:'Value',n:'Cheap on 10-year average earnings (cyclicals)',q:`Market Capitalization < 10 * Average Earnings 10Year AND
+ {id:'V8',h:[5,10],r:[12,18],g:'Value',n:'Cheap on 10-year average earnings (cyclicals)',q:`Market Capitalization < 10 * Average Earnings 10Year AND
 Enterprise Value < 8 * Average EBIT 10Year AND
 Average Earnings 10Year > 0 AND
 Median return on capital employed 10Years > 12 AND
 Debt to equity < 0.7`,c:'Judges price against a full cycle. Check whether the industry is permanently shrinking; old averages mean little then.'},
- {id:'V9',g:'Value',n:'Hidden investments: worth less than the shares it owns',q:`Market value of quoted investments > 0.6 * Market Capitalization AND
+ {id:'V9',h:[5,10],r:[8,15],g:'Value',n:'Hidden investments: worth less than the shares it owns',q:`Market value of quoted investments > 0.6 * Market Capitalization AND
 Debt to equity < 0.3 AND
 Profit after tax > 0`,cap:300,c:'Indian holding companies usually trade 40–70% below their holdings and the gap rarely closes. Buy only with a trigger: demerger, buyback, rising dividends.'},
- {id:'V10',g:'Value',n:'Balance-sheet bargains (near Graham net-net)',q:`(Current assets - Current liabilities - Debt) > 0.7 * Market Capitalization AND
+ {id:'V10',h:[2,5],r:[10,20],g:'Value',n:'Balance-sheet bargains (near Graham net-net)',q:`(Current assets - Current liabilities - Debt) > 0.7 * Market Capitalization AND
 Cash from operations last year > 0 AND
 Profit after tax > 0 AND
 Contingent liabilities < 0.2 * Market Capitalization`,cap:200,c:'Check the current assets are real: old receivables or unsold stock inflate them. Look at Debtor days and Days Inventory Outstanding.'},
- {id:'V11',g:'Value',n:'Cash cows paying you to wait',q:`Dividend yield > 3 AND
+ {id:'V11',h:[5,10],r:[9,14],g:'Value',n:'Cash cows paying you to wait',q:`Dividend yield > 3 AND
 Price to Earning > 0 AND
 Price to Earning < 15 AND
 Average dividend payout 3years > 30 AND
 Median return on capital employed 10Years > 15 AND
 Debt to equity < 0.2 AND
 Free cash flow 5years > 0`,c:'Check the dividend is covered by free cash flow, not paid out of savings. Many will be government-run companies.'},
- {id:'V12',g:'Value',n:'Working-capital discipline',q:`Debtor days < Debtor days 3years back * 0.85 AND
+ {id:'V12',h:[5,10],r:[14,20],g:'Value',n:'Working-capital discipline',q:`Debtor days < Debtor days 3years back * 0.85 AND
 Working Capital Days < Average Working Capital Days 3years AND
 CFO to EBITDA last year > 0.7 AND
 Sales growth 3Years > 8 AND
@@ -5522,7 +5522,7 @@ Piotroski score >= 6 AND
 Median return on capital employed 10Years > 15 AND
 Debt to equity < 1`,c:'Calibrated Nov 2026: about 25 companies. Management quality that a P/E never shows: receivables and working capital tightening while EBITDA turns into cash. Check it is not just a one-year dip in sales shrinking receivables.'},
  // ---- Growth
- {id:'G1',g:'Growth',n:'Consistent compounders',q:`COALESCE(Sales growth 10Years, Sales growth 5Years) > 12 AND
+ {id:'G1',h:[7,10],r:[14,20],g:'Growth',n:'Consistent compounders',q:`COALESCE(Sales growth 10Years, Sales growth 5Years) > 12 AND
 Sales growth 5Years > 12 AND
 Sales growth 3Years > 10 AND
 Profit growth 5Years > 15 AND
@@ -5533,23 +5533,23 @@ Debt to equity < 0.5 AND
 Pledged percentage < 1 AND
 Price to Earning > 0 AND
 Price to Earning < 50`,cap:1000,c:'Calibrated Nov 2026: about 70 companies. The 3-year lines stop the Covid base year from flattering 5-year growth. Most of these will be expensive; the Deep dive decides whether the price already assumes the next ten years.'},
- {id:'G2',g:'Growth',n:'Accelerating quarterly growth',q:`YOY Quarterly sales growth > 20 AND
+ {id:'G2',h:[1,3],r:[15,30],g:'Growth',n:'Accelerating quarterly growth',q:`YOY Quarterly sales growth > 20 AND
 YOY Quarterly profit growth > 25 AND
 YOY Quarterly profit growth > Profit growth 3Years AND
 Net Profit latest quarter > Net Profit preceding quarter AND
 Net Profit preceding quarter > Net profit 2quarters back AND
 Other income latest quarter < Net Profit latest quarter * 0.5 AND
 Tax latest quarter > 0.1 * Net Profit latest quarter`,c:'Seasonal businesses and low bases give false positives. Check whether the jump came from price, volume or a one-off order.'},
- {id:'G3',g:'Growth',n:'Growth without dilution',q:`Number of equity shares <= Number of equity shares 10years back * 1.1 AND
+ {id:'G3',h:[7,10],r:[14,20],g:'Growth',n:'Growth without dilution',q:`Number of equity shares <= Number of equity shares 10years back * 1.1 AND
 Sales growth 10Years > 12 AND
 EPS growth 5Years > 12 AND
 Average return on capital employed 10Years > 15`,c:'Screener may not adjust the share count for bonus issues, so this screen misses some good names rather than including bad ones.'},
- {id:'G4',g:'Growth',n:'Capacity expansion, funded sensibly',q:`(Net block + Capital work in progress) > 1.5 * (Net block preceding year + Capital work in progress preceding year) AND
+ {id:'G4',h:[3,7],r:[15,25],g:'Growth',n:'Capacity expansion, funded sensibly',q:`(Net block + Capital work in progress) > 1.5 * (Net block preceding year + Capital work in progress preceding year) AND
 Sales growth 3Years > 12 AND
 Average return on capital employed 5Years > 15 AND
 Debt to equity < 1 AND
 Cash from operations last year > 0`,c:'Check how the capex was funded, when the new capacity starts and the expected utilisation. Acquisitions also inflate net block.'},
- {id:'G5',g:'Growth',n:'GARP: growth at a reasonable price',q:`PEG Ratio > 0 AND
+ {id:'G5',h:[3,7],r:[15,22],g:'Growth',n:'GARP: growth at a reasonable price',q:`PEG Ratio > 0 AND
 PEG Ratio < 1.2 AND
 Sales growth > 15 AND
 Sales growth 5Years > 15 AND
@@ -5557,25 +5557,25 @@ EPS growth 5Years > 15 AND
 Return on capital employed > 18 AND
 Price to Earning < 35 AND
 Cash from operations last year > 0`,cap:1000,c:'PEG uses past growth. Check whether growth is slowing; a falling growth rate makes a low PEG a trap.'},
- {id:'G6',g:'Growth',n:'Shrinking share count (buybacks, no dilution)',q:`Number of equity shares < Number of equity shares preceding year AND
+ {id:'G6',h:[5,10],r:[12,18],g:'Growth',n:'Shrinking share count (buybacks, no dilution)',q:`Number of equity shares < Number of equity shares preceding year AND
 Return on capital employed > 15 AND
 Price to Earning > 0 AND
 Price to Earning < 35 AND
 Cash from operations last year > 0 AND
 Debt to equity < 1`,c:'The opposite of the dilution red flag. Check the buyback price against fair value: a buyback above fair value destroys value for those who stay.'},
  // ---- Contrarian
- {id:'C1',g:'Contrarian',n:'Quality stocks 35%+ below the 52-week high',q:`Current price < High price * 0.65 AND
+ {id:'C1',h:[2,5],r:[15,25],g:'Contrarian',n:'Quality stocks 35%+ below the 52-week high',q:`Current price < High price * 0.65 AND
 Average return on capital employed 5Years > 18 AND
 Debt to equity < 0.5 AND
 Sales growth 5Years > 10 AND
 Piotroski score >= 5`,cap:1000,c:'Find the cause of the fall: a lost customer, regulation, governance, or just a de-rating. Five-year ROCE lags a real structural break.'},
- {id:'C2',g:'Contrarian',n:'Within 10% of the 52-week low, balance sheet intact',q:`Current price < Low price * 1.1 AND
+ {id:'C2',h:[2,5],r:[15,25],g:'Contrarian',n:'Within 10% of the 52-week low, balance sheet intact',q:`Current price < Low price * 1.1 AND
 Debt to equity < 0.5 AND
 Current ratio > 1.5 AND
 Interest Coverage Ratio > 5 AND
 Altman Z Score > 3 AND
 Average return on equity 5Years > 12`,c:'A stock at its low often still has earnings on the way down. Check the last two quarters before trusting the averages.'},
- {id:'C3',g:'Contrarian',n:'Margin or profit turnaround',q:`(
+ {id:'C3',h:[1,3],r:[18,35],g:'Contrarian',n:'Margin or profit turnaround',q:`(
 (OPM latest quarter > OPM preceding year quarter + 3 AND OPM > OPM 5Year)
 OR
 (NPM preceding year quarter < 0 AND NPM latest quarter > 0)
@@ -5583,29 +5583,29 @@ OR
 YOY Quarterly sales growth > 5 AND
 Other income latest quarter < Net Profit latest quarter * 0.5 AND
 Debt to equity < 1.5`,c:'A fall in input costs can widen margins across a whole sector and reverse just as fast. One quarter is not a trend.'},
- {id:'C4',g:'Contrarian',n:'Meaningful debt reduction',q:`Debt 3Years back > 50 AND
+ {id:'C4',h:[2,5],r:[15,25],g:'Contrarian',n:'Meaningful debt reduction',q:`Debt 3Years back > 50 AND
 Debt < Debt 3Years back * 0.6 AND
 Interest Coverage Ratio > 3 AND
 Cash from operations last year > 0 AND
 Return on capital employed > Return on capital employed preceding year AND
 Sales growth 3Years > 5`,c:'Was debt repaid from operating cash, or from an equity raise or asset sale? Check the share count and the cash-flow statement. Leave banks out.'},
- {id:'C5',g:'Contrarian',n:'Promoters buying while the price is weak',q:`Change in promoter holding > 0.5 AND
+ {id:'C5',h:[2,5],r:[15,25],g:'Contrarian',n:'Promoters buying while the price is weak',q:`Change in promoter holding > 0.5 AND
 Pledged percentage < 5 AND
 Return over 1year < 0 AND
 Average return on capital employed 5Years > 12 AND
 Debt to equity < 1 AND
 Cash from operations last year > 0`,c:'Buybacks, warrant conversions and preferential allotments also raise the promoter percentage. Check the insider disclosures.'},
- {id:'C6',g:'Contrarian',n:'Quality compounder far below its all-time high',q:`Current price < High price all time * 0.5 AND
+ {id:'C6',h:[5,10],r:[14,22],g:'Contrarian',n:'Quality compounder far below its all-time high',q:`Current price < High price all time * 0.5 AND
 Median return on capital employed 10Years > 15 AND
 Sales growth 5Years > 8 AND
 Cash from operations last year > 0 AND
 Debt to equity < 0.5 AND
 Pledged percentage < 5`,cap:1000,c:'Many all-time highs were set in a bubble. Check the P/E at the peak: half of a silly price can still be a full price.'},
- {id:'C7',g:'Contrarian',n:'Institutions quietly building while the price lags',q:`(Change in FII holding 3Years + Change in DII holding 3Years) > 5 AND
+ {id:'C7',h:[3,7],r:[14,20],g:'Contrarian',n:'Institutions quietly building while the price lags',q:`(Change in FII holding 3Years + Change in DII holding 3Years) > 5 AND
 Return over 1year < 0 AND
 Average return on capital employed 5Years > 15 AND
 Debt to equity < 1`,cap:1000,c:'Index inclusion and passive funds also raise institutional holdings. Check whether the buying came from active funds.'},
- {id:'C8',g:'Contrarian',n:'Retail giving up: shareholder count falling',q:`Number of Shareholders < Number of Shareholders preceding quarter AND
+ {id:'C8',h:[2,5],r:[15,25],g:'Contrarian',n:'Retail giving up: shareholder count falling',q:`Number of Shareholders < Number of Shareholders preceding quarter AND
 Return over 1year < -25 AND
 Average return on capital employed 5Years > 15 AND
 Median return on capital employed 10Years > 12 AND
@@ -5614,7 +5614,7 @@ Pledged percentage < 5 AND
 Cash from operations last year > 0 AND
 Debt to equity < 0.7`,c:'Calibrated Nov 2026: about 50 companies. Falling shareholder counts after a long fall often mark the last sellers leaving. Confirm the business is intact in the last two quarters; the count also falls when a stock is simply forgotten.'},
  // ---- Momentum
- {id:'M1',g:'Momentum',n:'Sound business near a breakout',q:`Return on capital employed > 15 AND
+ {id:'M1',h:[1,3],r:[15,30],g:'Momentum',n:'Sound business near a breakout',q:`Return on capital employed > 15 AND
 Average return on capital employed 5Years > 15 AND
 Sales growth 5Years > 10 AND
 Cash from operations last year > 0 AND
@@ -5628,7 +5628,7 @@ Current price > DMA 50 AND
 DMA 50 > DMA 200 AND
 RSI > 50 AND
 Volume 1week average > 1.2 * Volume 1year average`,c:'The volume line changes daily, so save the screen and set an alert. If it returns 0, delete the volume line. If over 50, add Pledged percentage < 5 and RSI < 70.'},
- {id:'M2',g:'Momentum',n:'Quality already in an uptrend',q:`Return on capital employed > 15 AND
+ {id:'M2',h:[1,5],r:[12,20],g:'Momentum',n:'Quality already in an uptrend',q:`Return on capital employed > 15 AND
 Average return on capital employed 5Years > 15 AND
 Sales growth 5Years > 10 AND
 Cash from operations last year > 0 AND
@@ -5658,6 +5658,7 @@ function fqUnknownFields(q){
  return [...out];
 }
 // Goal-based builder
+const FQ_GOAL_BANDS={compounders:[[7,10],[13,18]],value:[[3,7],[14,20]],growth:[[3,7],[15,22]],dividend:[[5,10],[9,14]],netcash:[[3,10],[10,16]],contrarian:[[2,5],[15,25]],turnaround:[[1,3],[18,35]],breakout:[[1,3],[15,30]],financials:[[3,7],[12,18]]};
 const FQ_GOALS=[
  ['compounders','Steady compounders','Businesses that have grown and earned high returns for years. Usually not cheap.'],
  ['value','Good business at a low price','Proven returns on capital, now priced at a P/E that fits your target return.'],
@@ -5689,6 +5690,14 @@ function fqBuild(goal,cap,strict,target,years){
  else if(goal==='financials'){L=[`Price to book value > 0`,`Price to book value < ${[2.5,2,1.5][s]}`,`Average return on equity 5Years > ${[12,14,16][s]}`,`Return on equity > ${[10,12,14][s]}`,`Profit growth 5Years > ${Math.max(8,grow-2)}`,`Pledged percentage < 5`];notes.push('No debt or EV lines: they mean nothing for a lender. Judge asset quality (GNPA, provisioning, credit cost) in the Deep dive.','Insurers and AMCs need their own measures (embedded value, AUM); this screen is for lenders.')}
  return {q:FQ_FLOOR(cap)+' AND\n'+L.join(' AND\n'),notes};
 }
+
+// Does a preset or goal suit the target return and holding period set in Your goal?
+function fqFit(h,r,target,years){
+ let notes=[];
+ if(h&&(years<h[0]||years>h[1]))notes.push(years<h[0]?`built for a ${h[0]}–${h[1]} year hold; your ${years.toFixed(years%1?1:0)}-year horizon is shorter`:`built for a ${h[0]}–${h[1]} year hold; your ${years.toFixed(years%1?1:0)}-year horizon is longer, which is fine but these screens are judged on nearer-term signals`);
+ if(r&&target>r[1])notes.push(`these screens typically deliver ${r[0]}–${r[1]}% a year; your ${target}% target is above that range`);
+ return {ok:!notes.length,notes,suits:h&&r?`Suits a ${h[0]}–${h[1]} year hold, typically ${r[0]}–${r[1]}% a year.`:''};
+}
 const FQ_SAVED_KEY='sdd_my_screens_v1';
 function fqSavedLoad(){try{return JSON.parse(localStorage.getItem(FQ_SAVED_KEY)||'[]')}catch(e){return []}}
 function fqSavedWrite(a){try{localStorage.setItem(FQ_SAVED_KEY,JSON.stringify(a.slice(0,60)))}catch(e){}}
@@ -5702,14 +5711,17 @@ function fqCurrentTargetYears(){let t=+($('#targetCagr')||{}).value||12,m=+($('#
 function fqRender(){
  let box=$('#fqOut');if(!box)return;
  let {target,years}=fqCurrentTargetYears(),q,notes=[],title;
- if(fqState.mode==='preset'){let p=FQ_PRESETS.find(x=>x.id===fqState.preset)||FQ_PRESETS[0];fqState.preset=p.id;q=FQ_FLOOR(p.cap||fqState.cap)+' AND\n'+p.q;notes=[p.c];title=`${p.id} · ${p.n}`}
- else{let b=fqBuild(fqState.goal,fqState.cap,fqState.strict,target,years);q=b.q;notes=b.notes;title=(FQ_GOALS.find(g=>g[0]===fqState.goal)||FQ_GOALS[0])[1]}
+ if(fqState.mode==='preset'){let p=FQ_PRESETS.find(x=>x.id===fqState.preset)||FQ_PRESETS[0];fqState.preset=p.id;q=FQ_FLOOR(p.cap||fqState.cap)+' AND\n'+p.q;let f=fqFit(p.h,p.r,target,years);notes=[f.suits,...f.notes.map(n=>'Your goal: '+n+'.'),p.c].filter(Boolean);title=`${p.id} · ${p.n}`}
+ else{let b=fqBuild(fqState.goal,fqState.cap,fqState.strict,target,years);q=b.q;let gb=FQ_GOAL_BANDS[fqState.goal],f=gb?fqFit(gb[0],gb[1],target,years):{notes:[]};notes=[...f.notes.map(n=>'Your goal: '+n+'. The query still uses your numbers; the note is only a reality check.'),...b.notes];title=(FQ_GOALS.find(g=>g[0]===fqState.goal)||FQ_GOALS[0])[1]}
+ fqMarkPresets(target,years);
  let ta=$('#fqQuery');if(ta&&!ta.dataset.edited){ta.value=q}
  $('#fqTitle').textContent=title;
  $('#fqNotes').innerHTML=notes.map(n=>`<li>${escapeHtml(n)}</li>`).join('');
  $('#fqGoalLine').textContent=fqState.mode==='goal'?`Uses your goal: ${target.toFixed(1)}% a year over ${horizonLabel(Math.round(years*12))}. Change it in Your goal on the Screen or Deep dive page.`:'';
  fqCheck();
 }
+
+function fqMarkPresets(target,years){let ps=$('#fqPreset');if(!ps)return;ps.querySelectorAll('option[value]').forEach(o=>{let p=FQ_PRESETS.find(x=>x.id===o.value);if(!p)return;let fit=fqFit(p.h,p.r,target,years).ok;o.textContent=`${fit?'★ ':''}${p.id} · ${p.n}`})}
 function fqCheck(){
  let ta=$('#fqQuery'),el=$('#fqCheck');if(!ta||!el)return;
  let unk=fqUnknownFields(ta.value);
@@ -5725,7 +5737,7 @@ function fqInit(){
  let card=$('#findCard');if(!card)return;
  let goals=$('#fqGoals');goals.innerHTML=FQ_GOALS.map(g=>`<button type="button" class="fqgoal ${g[0]===fqState.goal?'on':''}" data-goal="${g[0]}" title="${escapeHtml(g[2])}"><b>${escapeHtml(g[1])}</b><span>${escapeHtml(g[2])}</span></button>`).join('');
  goals.querySelectorAll('.fqgoal').forEach(b=>b.onclick=()=>{fqState.mode='goal';fqState.goal=b.dataset.goal;goals.querySelectorAll('.fqgoal').forEach(x=>x.classList.toggle('on',x===b));let ps=$('#fqPreset');if(ps)ps.value='';let ta=$('#fqQuery');if(ta)delete ta.dataset.edited;fqRender()});
- let ps=$('#fqPreset');let groups=[...new Set(FQ_PRESETS.map(p=>p.g))];ps.innerHTML='<option value="">Or pick a ready-made screen…</option>'+groups.map(g=>`<optgroup label="${g}">${FQ_PRESETS.filter(p=>p.g===g).map(p=>`<option value="${p.id}">${p.id} · ${escapeHtml(p.n)}</option>`).join('')}</optgroup>`).join('');
+ let ps=$('#fqPreset');let groups=[...new Set(FQ_PRESETS.map(p=>p.g))];ps.innerHTML='<option value="">Or pick a ready-made screen… (★ = fits your goal)</option>'+groups.map(g=>`<optgroup label="${g}">${FQ_PRESETS.filter(p=>p.g===g).map(p=>`<option value="${p.id}">${p.id} · ${escapeHtml(p.n)}</option>`).join('')}</optgroup>`).join('');
  ps.onchange=()=>{if(!ps.value)return;fqState.mode='preset';fqState.preset=ps.value;goals.querySelectorAll('.fqgoal').forEach(x=>x.classList.remove('on'));let ta=$('#fqQuery');if(ta)delete ta.dataset.edited;fqRender()};
  $('#fqStrict').onchange=e=>{fqState.strict=+e.target.value;let ta=$('#fqQuery');if(ta)delete ta.dataset.edited;fqRender()};
  $('#fqCap').onchange=e=>{fqState.cap=+e.target.value;let ta=$('#fqQuery');if(ta)delete ta.dataset.edited;fqRender()};
