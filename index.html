@@ -685,7 +685,7 @@ function setCompanySort(mode){
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='12.7';
+const TERMINAL_VERSION='12.8';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -5517,11 +5517,15 @@ Free cash flow 5years > 0`,c:'Check the dividend is covered by free cash flow, n
  // ---- Growth
  {id:'G1',g:'Growth',n:'Consistent compounders',q:`COALESCE(Sales growth 10Years, Sales growth 5Years) > 12 AND
 Sales growth 5Years > 12 AND
+Sales growth 3Years > 10 AND
 Profit growth 5Years > 15 AND
-COALESCE(Average return on capital employed 10Years, Average return on capital employed 5Years) > 18 AND
-Return on equity > 15 AND
+Profit growth 3Years > 12 AND
+Median return on capital employed 10Years > 20 AND
+Return on equity > 18 AND
 Debt to equity < 0.5 AND
-Pledged percentage < 1`,cap:1000,c:'Most of these will be expensive. The Deep dive has to decide whether the price already assumes the next ten years.'},
+Pledged percentage < 1 AND
+Price to Earning > 0 AND
+Price to Earning < 50`,cap:1000,c:'Calibrated Nov 2026: about 70 companies. The 3-year lines stop the Covid base year from flattering 5-year growth. Most of these will be expensive; the Deep dive decides whether the price already assumes the next ten years.'},
  {id:'G2',g:'Growth',n:'Accelerating quarterly growth',q:`YOY Quarterly sales growth > 20 AND
 YOY Quarterly profit growth > 25 AND
 YOY Quarterly profit growth > Profit growth 3Years AND
