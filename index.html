@@ -685,7 +685,7 @@ function setCompanySort(mode){
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='12.0';
+const TERMINAL_VERSION='12.1';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -5605,7 +5605,7 @@ function fqBuild(goal,cap,strict,target,years){
  const growthLine=(f,v)=>per==='10'?`COALESCE(${f} 10Years, ${f} 5Years) > ${v}`:`${f} ${per} > ${v}`;
  let L=[],notes=[];
  if(goal==='compounders'){L=[growthLine('Sales growth',grow),growthLine('Profit growth',grow+3),roceLine(roce+3),`Return on equity > ${roce}`,`Debt to equity < ${de}`,`Pledged percentage < ${[5,1,1][s]}`];notes.push(`Growth floor ${grow}% a year: at least your target return (${target}%).`,'Most results will be expensive; the Deep dive decides whether the price already assumes the next ten years.')}
- else if(goal==='value'){L=[`Price to Earning > 0`,`Price to Earning < ${peCap}`,roceLine(roce),`Debt to equity < ${de}`,`Interest Coverage Ratio > ${ic}`,`Piotroski score >= ${pio}`,`Cash from operations last year > 0`];if(s>0)L.push(`Other income < 0.3 * Profit after tax`);notes.push(`P/E ceiling ${peCap}: 250 ÷ your target return of ${target}%. A higher target means a lower ceiling.`,'Watch for cyclicals at peak margins and companies living off treasury income.')}
+ else if(goal==='value'){L=[`Price to Earning > 0`,`Price to Earning < ${peCap}`,roceLine(roce),`Debt to equity < ${de}`,`Interest Coverage Ratio > ${ic}`,`Piotroski score >= ${pio}`,`Cash from operations last year > 0`];if(s>0)L.push(`Other income < 0.3 * Profit after tax`,`Sales growth 5Years > ${[0,8,10][s]}`,`Median return on capital employed 10Years > ${[0,12,15][s]}`,`Pledged percentage < ${[100,5,1][s]}`);if(s>1)L.push(`Price to Earning < Historical PE 5Years`);notes.push(`P/E ceiling ${peCap}: 250 ÷ your target return of ${target}%. A higher target means a lower ceiling.`,'Watch for cyclicals at peak margins and companies living off treasury income.')}
  else if(goal==='growth'){L=[`PEG Ratio > 0`,`PEG Ratio < ${[1.5,1.2,1][s]}`,`Sales growth > ${grow}`,growthLine('Sales growth',grow),growthLine('EPS growth',grow),`Return on capital employed > ${roce+3}`,`Price to Earning < ${Math.max(peCap,25)}`,`Cash from operations last year > 0`];notes.push(`Growth floor ${grow}% a year, from your target return.`,'PEG uses past growth. Check that growth is not slowing.')}
  else if(goal==='dividend'){const y=[2,3,4][s];L=[`Dividend yield > ${y}`,`Price to Earning > 0`,`Price to Earning < ${Math.min(peCap,20)}`,`Average dividend payout 3years > ${[25,30,40][s]}`,roceLine(roce),`Debt to equity < ${[0.5,0.2,0.1][s]}`,`Free cash flow 5years > 0`];notes.push(`Yield floor ${y}%: dividends alone cover roughly ${Math.round(y/target*100)}% of your ${target}% target, the rest must come from growth.`,'Check the dividend is paid from free cash flow, not savings. Many will be government companies.')}
  else if(goal==='netcash'){L=[`(\n(Cash Equivalents > Debt AND Cash Equivalents > ${[0.2,0.3,0.4][s]} * Market Capitalization)\nOR\n(Market value of quoted investments > ${[0.5,0.6,0.7][s]} * Market Capitalization)\n)`,`Debt to equity < ${de}`,`Profit after tax > 0`,`Cash from operations last year > 0`,`Contingent liabilities < 0.3 * Market Capitalization`];notes.push('Cash Equivalents probably leaves out liquid funds held under Investments, so some cash-rich firms are missed.','Ask why the cash or the holdings are not reaching minority shareholders; look for a trigger.')}
