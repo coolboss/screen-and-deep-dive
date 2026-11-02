@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Screener batch export for Screen & Deep Dive
 // @namespace    screen-and-deep-dive
-// @version      11.8
+// @version      11.9
 // @description  Adds a "Batch export" button on screener.in. Downloads each company's Excel export plus a notes file (pros, cons, shareholding, announcements) into one zip for Screen & Deep Dive. Same code as the app's built-in bookmark.
 // @match        https://www.screener.in/*
 // @match        https://screener.in/*

@@ -1,6 +1,6 @@
 # Screen & Deep Dive 11 "Triage"
 
-**Version 11.8** (1 November 2026) · Batch export script version 11.8
+**Version 11.9** (2 November 2026) · Batch export script version 11.9
 
 An offline stock-research app for Indian listed companies. It reads Screener.in Excel exports, classifies each company by its NSE industry, values it with a sector-specific engine, and gives a plain verdict for your holding period and return target.
 
@@ -11,7 +11,7 @@ An offline stock-research app for Indian listed companies. It reads Screener.in 
 | File | What it is |
 |---|---|
 | `index.html` | The whole app. One file, no install, nothing leaves your browser except price downloads. |
-| `Screener_batch_export.user.js` | Optional Tampermonkey script: a "Batch export" button on screener.in. The same exporter is built into the app as a bookmark, so most people do not need this. |
+| `Screener_batch_export.user.js` | Userscript that adds a "Batch export" button on screener.in. On a computer the same exporter is built into the app as a bookmark. On a phone this script is the way: iPhone/iPad with the Userscripts app for Safari (tested), Android with Firefox + Tampermonkey. Steps are on the app's Get data page. |
 
 ## How it works, in short
 
