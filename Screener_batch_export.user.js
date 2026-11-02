@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Screener batch export for Screen & Deep Dive
 // @namespace    screen-and-deep-dive
-// @version      12.4
+// @version      12.5
 // @description  Adds a "Batch export" button on screener.in. Downloads each company's Excel export plus a notes file (pros, cons, shareholding, announcements) into one zip for Screen & Deep Dive. Same code as the app's built-in bookmark.
 // @match        https://www.screener.in/*
 // @match        https://screener.in/*
@@ -31,7 +31,7 @@ box.innerHTML='<div id="sbhd" style="display:flex;justify-content:space-between;
 +'<div id="sbs" style="margin-top:8px;font-weight:700"></div><div id="sbl" style="margin-top:6px;max-height:240px;overflow:auto;font:12px ui-monospace,Consolas,monospace;color:#c9d6ee"></div><div id="sbe" style="margin-top:8px"></div>';
 document.body.appendChild(box);
 S('sbxx').onclick=()=>{box.style.display='none'};S('sbmn').onclick=()=>{let m=box.dataset.min!=='1';box.dataset.min=m?'1':'0';[...box.children].forEach((c,i)=>{if(i)c.style.display=m?'none':''});box.style.width=m?'260px':'400px';box.style.overflow=m?'hidden':'auto';S('sbmn').textContent=m?'▢':'–';S('sbmn').title=m?'Restore':'Minimise'};(()=>{let hd=S('sbhd'),sx,sy,bx,by,on=false;const pt=e=>e.touches?e.touches[0]:e;const down=e=>{if(e.target.id==='sbmn'||e.target.id==='sbxx')return;let p=pt(e),r=box.getBoundingClientRect();sx=p.clientX;sy=p.clientY;bx=r.left;by=r.top;on=true;box.style.right='auto';box.style.left=bx+'px';box.style.top=by+'px';e.preventDefault()};const move=e=>{if(!on)return;let p=pt(e),w=box.offsetWidth;let x=Math.max(0,Math.min(window.innerWidth-60,bx+p.clientX-sx)),y=Math.max(0,Math.min(window.innerHeight-40,by+p.clientY-sy));box.style.left=x+'px';box.style.top=y+'px';e.preventDefault()};const up=()=>{on=false};hd.addEventListener('mousedown',down);hd.addEventListener('touchstart',down,{passive:false});document.addEventListener('mousemove',move);document.addEventListener('touchmove',move,{passive:false});document.addEventListener('mouseup',up);document.addEventListener('touchend',up)})();
-let stop=false;S('sbp').onclick=()=>{stop=true;S('sbs').textContent='Stopping after this company…'};
+let stop=false;S('sbp').onclick=()=>{stop=true;S('sbs').textContent='Stopping after this company…'};S('sbd').oninput=()=>{S('sbd').dataset.user='1'};
 const log=(t,c)=>{let p=document.createElement('div');p.textContent=t;if(c)p.style.color=c;S('sbl').appendChild(p);S('sbl').scrollTop=1e9};
 const codesFrom=t=>{let out=[];String(t||'').split(/[\s,;|]+/).forEach(x=>{x=x.trim();let m=x.match(/screener\.in\/company\/([^\/?#]+)/i);if(m)x=m[1];x=x.replace(/^NSE:|^BSE:/i,'').replace(/\.(NS|BO)$/i,'');if(/^[A-Za-z0-9&\-_.]{2,25}$/.test(x))out.push(x)});let seen=new Set();return out.map(x=>x.toUpperCase()).filter(x=>!seen.has(x)&&seen.add(x))};
 const cookie=n=>{let m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):''};
@@ -93,12 +93,15 @@ S('sbf').onclick=async()=>{
  for(let p=2;p<=Math.min(last,40);p++){try{let u=new URL(location.href);u.searchParams.set('page',p);let r=await fetch(u.toString(),{credentials:'same-origin'});if(!r.ok)break;let d=new DOMParser().parseFromString(await r.text(),'text/html');for(const c of pageCodes(d))if(!seen.has(c)){seen.add(c);codes.push(c)}S('sbs').textContent='Read page '+p+' of '+last+'…';await wait(700)}catch(e){break}}
  codes=[...new Set(codes)];
  if(!codes.length){S('sbs').textContent='No company links found on this page. Open a screen\'s results first.';return}
- S('sbt').value=codes.join('\n');S('sbs').textContent=codes.length+' companies taken from this page. Press Start to download them.';
+ S('sbt').value=codes.join('\n');let g=gapFor(codes.length);S('sbd').value=g;S('sbs').textContent=codes.length+' companies taken from this page. Gap set to '+g+' seconds for a list this size. Press Start to download them.';
 };
+const gapFor=n=>n>80?7:n>30?5:3;
 S('sbg').onclick=async()=>{
  let codes=codesFrom(S('sbt').value);if(!codes.length){S('sbs').textContent='Paste at least one symbol.';return}
- let cons=document.querySelector('input[name=sbv]:checked').value==='c',z=S('sbz').checked,gap=Math.max(1,Math.min(30,+S('sbd').value||3))*1000,done=[],failed=[];
+ let cons=document.querySelector('input[name=sbv]:checked').value==='c',z=S('sbz').checked,gapS=Math.max(1,Math.min(30,+S('sbd').value||3)),done=[],failed=[];
  stop=false;S('sbg').disabled=true;S('sbp').disabled=false;S('sbl').innerHTML='';S('sbe').innerHTML='';
+ if(gapS<gapFor(codes.length)&&!S('sbd').dataset.user){gapS=gapFor(codes.length);S('sbd').value=gapS;log('Gap raised to '+gapS+' seconds for '+codes.length+' companies, so Screener does not refuse requests. Type your own number to override.','#f4c95d')}
+ let gap=gapS*1000;
  for(let i=0;i<codes.length&&!stop;i++){
   S('sbs').textContent='Exporting '+(i+1)+' of '+codes.length+': '+codes[i]+'…';
   let f=null,err=null;
