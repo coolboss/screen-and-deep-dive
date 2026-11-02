@@ -685,7 +685,7 @@ function setCompanySort(mode){
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='12.10';
+const TERMINAL_VERSION='12.11';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -5514,11 +5514,13 @@ Average dividend payout 3years > 30 AND
 Median return on capital employed 10Years > 15 AND
 Debt to equity < 0.2 AND
 Free cash flow 5years > 0`,c:'Check the dividend is covered by free cash flow, not paid out of savings. Many will be government-run companies.'},
- {id:'V12',g:'Value',n:'Working-capital discipline',q:`Debtor days < Debtor days 3years back AND
+ {id:'V12',g:'Value',n:'Working-capital discipline',q:`Debtor days < Debtor days 3years back * 0.85 AND
 Working Capital Days < Average Working Capital Days 3years AND
 CFO to EBITDA last year > 0.7 AND
+Sales growth 3Years > 8 AND
+Piotroski score >= 6 AND
 Median return on capital employed 10Years > 15 AND
-Debt to equity < 1`,c:'Management quality that a P/E never shows: receivables and working capital tightening while EBITDA turns into cash. Check it is not just a one-year dip in sales shrinking receivables.'},
+Debt to equity < 1`,c:'Calibrated Nov 2026: about 25 companies. Management quality that a P/E never shows: receivables and working capital tightening while EBITDA turns into cash. Check it is not just a one-year dip in sales shrinking receivables.'},
  // ---- Growth
  {id:'G1',g:'Growth',n:'Consistent compounders',q:`COALESCE(Sales growth 10Years, Sales growth 5Years) > 12 AND
 Sales growth 5Years > 12 AND
