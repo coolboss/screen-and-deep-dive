@@ -9,12 +9,12 @@ const {chromium}=require('playwright');const fs=require('fs');const path=require
  let prev={};try{prev=JSON.parse(fs.readFileSync(statePath,'utf8'))}catch(e){}
  const b=await chromium.launch();const p=await b.newPage({viewport:{width:1300,height:900}});
  await p.goto('file://'+path.resolve(html));await p.waitForTimeout(1500);
- const zip=fs.readFileSync(zipPath).toString('base64');
+ const zip=fs.readFileSync(zipPath).toString('base64'),zipName=path.basename(zipPath);
  const holds=holdingFiles.map(f=>({name:path.basename(f),label:path.basename(f).replace(/\.(csv|xlsx)$/i,''),b64:fs.readFileSync(f).toString('base64')}));
- const res=await p.evaluate(async({zip,holds})=>{
+ const res=await p.evaluate(async({zip,zipName,holds})=>{
   const toFile=(b64,name)=>{let bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],name)};
   window.prompt=()=>'';
-  await importFiles([toFile(zip,'watchlist.zip')]);
+  await importFiles([toFile(zip,zipName)]);
   for(const h of holds){try{await pfImport(toFile(h.b64,h.name),h.label)}catch(e){}}
   // wait for prices (auto-fetch queue)
   for(let i=0;i<90;i++){await new Promise(r=>setTimeout(r,1000));if(models.every(m=>(m.priceHistory&&m.priceHistory.length)||m._autoTried)&&!soAutoBusy)break}
@@ -35,7 +35,7 @@ const {chromium}=require('playwright');const fs=require('fs');const path=require
    rows.push(row);
   }
   return {rows,held:null};
- },{zip,holds});
+ },{zip,zipName,holds});
  await b.close();
  const P=x=>isFinite(x)?'₹'+Math.round(x).toLocaleString('en-IN'):'—';
  const pct=x=>isFinite(x)?(x*100).toFixed(0)+'%':'—';

@@ -714,7 +714,7 @@ function setCompanySort(mode){
  if(batchMode)renderBatch();
 }
 
-const TERMINAL_VERSION='12.18';
+const TERMINAL_VERSION='12.19';
 const ENGINE_VERSION='2026-10-20-core-earnings-history-pe';
 const SETTINGS_KEY='ifrt_v90_settings';
 const DEFAULT_SETTINGS={
@@ -3421,6 +3421,8 @@ async function expandImportFiles(list){
  let out=[],notes=[],jsons=[];const junk=b=>/^~\$|^\._|^\./.test(b);
  for(const f of [...(list||[])]){
   let n=f.name||'',b=n.split('/').pop();if(junk(b))continue;
+  if(/\.tsv$/i.test(b)){out.push(f);continue}
+  if(/bundle\.json$/i.test(b)){try{let o=JSON.parse(await f.text());if(o&&o.kind==='sdd-bundle'){for(const [n,t] of Object.entries(o.files||{}))if(!/^ERROR /.test(n))out.push(new File([t],n));for(const [n,j] of Object.entries(o.notes||{}))jsons.push(new File([JSON.stringify(j)],n));notes.push(`${b}: ${Object.keys(o.files||{}).length} companies inside`);continue}}catch(e){}}
   if(/\.zip$/i.test(b)){
    try{let ents=await unzipXlsx(await f.arrayBuffer()),k=0,inner=[];for(const [p,data] of ents){let bn=p.split('/').pop();if(p.startsWith('__MACOSX/')||junk(bn))continue;if(/\.zip$/i.test(bn)){inner.push(new File([data],bn));continue}if(/\.json$/i.test(bn)){jsons.push(new File([data],bn));continue}if(!/\.xlsx$/i.test(bn))continue;out.push(new File([data],bn));k++}if(inner.length){let sub=await expandImportFiles(inner);out.push(...sub.files);jsons.push(...(sub.jsons||[]));k+=sub.files.length}notes.push(`${b}: ${k} workbook${k===1?'':'s'} inside`+(ents.unsupported?`. ${ents.unsupported} file${ents.unsupported===1?' was':'s were'} packed with a method browsers cannot open (Windows sometimes uses Deflate64): unzip the folder and choose the Excel files, or re-zip it with 7-Zip.`:''))}
    catch(e){notes.push(`${b}: could not open the zip (${e.message||e})`)}
@@ -5331,7 +5333,7 @@ async function importFiles(fileList){
  if(notesIn&&!fs.length){setImportStatus(`${notesIn} Screener notes file${notesIn===1?'':'s'} added.`);if(model)uiQuietRender();return}
  if(!fs.length){showGlobalError('No Screener or Tijori workbook found.','Choose Screener .xlsx exports, Tijori company exports (cons_….xlsx), a .zip that contains them, or a folder that contains them. Legacy .xls is not read; save it as .xlsx or paste the Data Sheet.'+(ex.notes.length?'\n\n'+ex.notes.join('\n'):''));return}
  clearGlobalError();let imported=0,errors=[],duplicates=[];
- let fi=0;for(const f of fs){fi++;if(fs.length>3)setImportStatus(`Reading ${fi} of ${fs.length}: ${f.name}`);try{let m;if(/\.xlsx$/i.test(f.name)){let sheets=await xlsxAllSheets(await f.arrayBuffer());if(looksLikeTijori(sheets)){m=await importTijoriFile(f,sheets)}}if(!m){let raw=await readFile(f);m=parse(raw);m.sourceName=f.name}if(!looksLikeScreener(m)){skipped.push(f.name);continue}let dup=findDuplicateCompany(m);if(dup){duplicates.push(`${m.company} (${f.name})`);continue}models.push(m);imported++}catch(e){console.error(f.name,e);errors.push(`${f.name}: ${e.message||e}`)}}
+ let fi=0;for(const f of fs){fi++;if(fs.length>3)setImportStatus(`Reading ${fi} of ${fs.length}: ${f.name}`);try{let m;if(/\.xlsx$/i.test(f.name)){let sheets=await xlsxAllSheets(await f.arrayBuffer());if(looksLikeTijori(sheets)){m=await importTijoriFile(f,sheets)}}if(!m){let raw=/\.tsv$/i.test(f.name)?await f.text():await readFile(f);m=parse(raw);m.sourceName=f.name}if(!looksLikeScreener(m)){skipped.push(f.name);continue}let dup=findDuplicateCompany(m);if(dup){duplicates.push(`${m.company} (${f.name})`);continue}models.push(m);imported++}catch(e){console.error(f.name,e);errors.push(`${f.name}: ${e.message||e}`)}}
  if(notesIn&&!imported&&model)uiQuietRender();
  if(imported){setTimeout(soAutoFetchQueue,0);activeIndex=models.length-1;model=models[activeIndex];$('#profile').value=model.manualClass||'Auto';syncCompanyControls();refreshBatchList();try{if(models.length>1)renderBatch();else render()}catch(e){console.error('Render error',e);showGlobalError('Files imported, but analysis rendering failed.',e.message||String(e))}}
  setImportStatus(fs.length>3?`Imported ${imported} of ${fs.length} workbook${fs.length===1?'':'s'}.`:'');let msgs=[];if(skipped.length)msgs.push('Not Screener exports (skipped): '+skipped.join(', '));if(duplicates.length)msgs.push('Skipped duplicate(s): '+duplicates.join(', '));if(errors.length)msgs.push('Could not read:\n'+errors.join('\n'));if(msgs.length)showGlobalError(imported?'Import completed with cautions.':errors.length?'Import failed.':'Nothing new imported.',msgs.join('\n\n'),imported||!errors.length?'warn':'bad');
