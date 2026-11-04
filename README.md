@@ -1,6 +1,6 @@
 # Screen & Deep Dive 12 "Triage"
 
-**Version 12.19** (2 November 2026) · Batch export script version 12.5
+**Version 12.19** (4 November 2026)
 
 An offline stock-research app for Indian listed companies. It reads Screener.in Excel exports, classifies each company by its NSE industry, values it with a sector-specific engine, and gives a plain verdict for your holding period and return target.
 
@@ -11,11 +11,10 @@ An offline stock-research app for Indian listed companies. It reads Screener.in 
 | File | What it is |
 |---|---|
 | `index.html` | The whole app. One file, no install, nothing leaves your browser except price downloads. |
-| `Screener_batch_export.user.js` | Userscript that adds a "Batch export" button on screener.in. On a computer the same exporter is built into the app as a bookmark. On a phone this script is the way: iPhone/iPad with the Userscripts app for Safari (tested), Android with Firefox + Tampermonkey. Steps are on the app's Get data page. |
 
 ## How it works, in short
 
-1. **Get data** — statements come from a Screener.in Excel export or, as a second source, a Tijori Finance company export (cons_….xlsx); the app rewrites the latter into Screener's layout and runs the same engines (Fiem Industries from both sources: fair value within 1%). If you have no list yet, **Find companies** writes a Screener query for your goal (or pick one of 28 ready-made screens; field names are checked against Screener's own ratio list). Then export companies from Screener.in (the app's bookmark does a whole list at once and packs them in a zip with a notes file per company: Screener's pros and cons, shareholding, announcements).
+1. **Get data** — statements come from a Screener.in Excel export or, as a second source, a Tijori Finance company export (cons_….xlsx); the app rewrites the latter into Screener's layout and runs the same engines (Fiem Industries from both sources: fair value within 1%). If you have no list yet, **Find companies** writes a Screener query for your goal (or pick one of 28 ready-made screens; field names are checked against Screener's own ratio list). Then export each company from Screener.in with its Export to Excel button, and drop the files in together.
 2. **Screen** — a quick pre-screen grades the batch; the investment-grade scan runs the full valuation and sorts companies into act now / wait / too expensive.
 3. **Deep dive** — one company: verdict, three reasons for and against, fair-value range, action plan with entry prices, daily chart and a weekly "second opinion" from prices.
 
