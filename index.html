@@ -787,7 +787,7 @@ function parse(raw){
   let qSh=salesQ.map((x,i)=>fin(x)&&x>0&&fin(oiQ[i])?oiQ[i]/x:NaN),qBand=qSh.filter(fin).length>=6?oiBand(qSh):oiA;
   let oneOffTTM=0;for(let i=li-3;i<=li;i++){let o=oneOffOf(salesQ[i],oiQ[i],pbtQ[i],taxQ[i],pats[i],qBand);if(o)oneOffTTM+=o.post}
   let pbtTTM=pbtQ.slice(li-3,li+1),taxTTM=taxQ.slice(li-3,li+1),pbtSum=pbtTTM.every(fin)?pbtTTM.reduce((a,b)=>a+b,0):NaN,taxSum=taxTTM.every(fin)?taxTTM.reduce((a,b)=>a+b,0):NaN;
-  return {valid,validBase:valid,pat:patTTM,patReported:patTTM,patCore:patTTM-oneOffTTM,oneOff:oneOffTTM,pbt:pbtSum,tax:taxSum,sales:salesTTM,quarterEnd:qEnd,fyEnd,reason:valid?'Four complete quarters newer than latest annual report':!newer?'Latest complete quarter is not newer than the annual report':'TTM PAT is not positive/usable'};
+  return {valid,validBase:valid,pat:patTTM,patReported:patTTM,patCore:patTTM-oneOffTTM,oneOff:oneOffTTM,pbt:pbtSum,tax:taxSum,sales:salesTTM,quarterEnd:qEnd,fyEnd,qDates:dates,qPats:pats,qSales:salesQ,reason:valid?'Four complete quarters newer than latest annual report':!newer?'Latest complete quarter is not newer than the annual report':'TTM PAT is not positive/usable'};
  }
  // Screener folds exceptional items into Other Income. Anything far from the company's own normal
  // other-income level (median share of sales) is treated as a one-off and removed from core earnings.
