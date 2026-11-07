@@ -77,8 +77,8 @@ const {chromium}=require('playwright');const fs=require('fs');const path=require
     let debtWorse=!r.lender&&isFinite(r.debtNow)&&isFinite(r.debtPrev)&&r.debtNow>r.debtPrev*1.15;
     let q3=r.flagsBad.length?`red flags: ${r.flagsBad.join('; ')}`:r.flagsWarn.length?`no red flag; cautions: ${r.flagsWarn.slice(0,2).join('; ')}`:'no red flags on the statements';
     let q4=isFinite(r.fair)?`${P(px)} is ${pct(Math.abs(r.mos))} ${r.mos>=0?'below':'above'} fair value ${P(r.fair)} (${r.verdict})`:'no fair value';
-    let cracks=(onPlan===false?1:0)+(debtWorse?1:0)+(r.flagsBad.length?1:0);
-    let decide=cracks===0&&r.mos>0?'HOLD / ADD — thesis intact, price cheaper':cracks===0?'HOLD — thesis intact, but not cheap enough to add':cracks===1?'STOP ADDING — one crack; sell part if it touches the heart of the thesis':'SELL — thesis broken on more than one count';
+    let cracks=(onPlan===false?1:0)+(debtWorse?1:0)+(!r.lender&&r.flagsBad.length?1:0);
+    let decide=cracks===0&&r.mos>0?'HOLD / ADD — accounts on plan, price cheaper':cracks===0?'HOLD — accounts on plan, but not cheap enough to add':cracks===1?'STOP ADDING — one crack in the accounts; read the latest result and decide whether it touches the heart of your thesis':'LOOKS BROKEN on the accounts — read the latest result and the management commentary; the book says sell if the thesis is gone, but only you know the thesis';
     ev.push(`   Review 1: ${q1}${onPlan===null?'':onPlan?' — on plan':' — off plan'}`);ev.push(`   Review 2: ${q2}`);ev.push(`   Review 3: ${q3}`);ev.push(`   Review 4: ${q4}`);ev.push(`   → ${decide}`);
    }
    if(isFinite(r.trimFrom)&&px>=r.trimFrom&&!(isFinite(o.livePrice)&&o.livePrice>=o.trimFrom))ev.push(`entered the trim zone (from ${P(r.trimFrom)})`);
