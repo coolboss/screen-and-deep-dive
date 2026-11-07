@@ -21,7 +21,7 @@ const {chromium}=require('playwright');const fs=require('fs');const path=require
   for(const m of models){let c=classes[normalizedNameKey(m.company)]||classes[(typeof soSymFor==='function'?soSymFor(m):'')||'-'];if(c)m.manualClass=c}
   for(const h of holds){try{await pfImport(toFile(h.b64,h.name),h.label)}catch(e){}}
   // wait for prices (auto-fetch queue)
-  for(let i=0;i<90;i++){await new Promise(r=>setTimeout(r,1000));if(models.every(m=>(m.priceHistory&&m.priceHistory.length)||m._autoTried)&&!soAutoBusy)break}
+  for(let i=0;i<240;i++){await new Promise(r=>setTimeout(r,1000));if(i>=15&&models.every(m=>(m.priceHistory&&m.priceHistory.length)||m._autoTried)&&!soAutoBusy)break}
   let rows=[];
   for(const m of models){
    let r;try{r=batchResult(m)}catch(e){rows.push({company:m.company,error:String(e)});continue}
