@@ -361,6 +361,8 @@ body[data-view="screen"] .batchnav{display:none}
 @media(max-width:520px){.decisiongrid{grid-template-columns:1fr!important}}
 .ap .goallink{border:0;background:none;padding:0;font:inherit;color:var(--teal2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .tablewrap{overflow-x:auto}
+.fqmine{margin-top:12px;border:1px solid var(--teal2);border-left-width:5px;border-radius:10px;padding:10px 14px;background:#fff}.fqminehead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.fqsaved{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--rule)}.fqsaved:first-child{border-top:0}.fqsaved .fqsq{grid-column:1/-1;font:11px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--muted);white-space:pre-wrap;max-height:3.9em;overflow:hidden}
 .fqsliders{margin-top:8px;border:1px solid var(--rule);border-radius:10px;padding:8px 12px;background:#fff}.fqsliders summary{cursor:pointer;font-weight:600}.fqsliders summary .hint{font-weight:400;margin-left:6px}
 .fqsl{display:grid;grid-template-columns:minmax(160px,1.4fr) 2fr 70px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule);font-size:13px}.fqsl:last-child{border-bottom:0}.fqsl input[type=range]{width:100%;margin:0}.fqsl b{font-variant-numeric:tabular-nums;text-align:right}.fqsl .fqslf{color:var(--muted)}.fqsl .fqslf i{font-style:normal;color:var(--text)}
 @media(max-width:760px){.fqsliders{display:none}}
@@ -453,6 +455,7 @@ details.notes{background:var(--surface);border:1px solid var(--rule);border-radi
    <label>Ready-made screen<select id="fqPreset"></select></label>
   </div>
   <div class="hint" id="fqGoalLine" style="margin:6px 0 0"></div>
+  <div class="fqmine" id="fqMine"><div class="fqminehead"><b>My saved screens</b><span class="hint">Your own queries, by the name you gave them. Load one to see and edit it below; it is yours, not a ready-made screen.</span></div><div id="fqSaved"></div></div>
   <div class="fqout" id="fqOut">
    <div class="fqhead"><b id="fqTitle"></b><button class="btn" type="button" id="fqReset" title="Throw away your edits and rebuild from the choices above">Rebuild</button></div>
    <textarea id="fqQuery" spellcheck="false" rows="12" aria-label="Screener query"></textarea>
@@ -467,7 +470,6 @@ details.notes{background:var(--surface);border:1px solid var(--rule);border-radi
     <li><b>Save it there</b><span>Press Save this query on Screener and set an alert, so new entrants are emailed to you.</span></li>
     <li><b>Export the companies</b><span>Open each company on screener.in and press Export to Excel. Drop all the files in the box below at once.</span></li>
    </ol>
-   <details><summary style="cursor:pointer;font-weight:600">My saved screens</summary><div id="fqSaved" style="margin-top:8px"></div></details>
    <details id="listBox" style="margin-top:10px"><summary style="cursor:pointer;font-weight:600">Bring a list from another site (Value Research, Tickertape, Trendlyne, a broker)</summary>
     <p class="hint" style="margin:8px 0">Paste the list, or choose its CSV or Excel file. The app picks out the NSE symbols: codes first, then company names matched against its own table. Use the list to open and export each company on screener.in.</p>
     <textarea id="listPaste" rows="5" spellcheck="false" placeholder="Paste company names or NSE codes here, one per line or a whole table…" style="width:100%;font:12.5px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;padding:10px;border:1px solid var(--rule2);border-radius:var(--r-s);background:var(--sunk);color:var(--ink)"></textarea>
@@ -6188,8 +6190,8 @@ function fqCheck(){
 }
 function fqSavedRender(){
  let el=$('#fqSaved');if(!el)return;let a=fqSavedLoad();
- el.innerHTML=a.length?a.map((x,i)=>`<div class="fqsaved"><b>${escapeHtml(x.name)}</b><span class="hint">${new Date(x.when).toLocaleDateString()}</span><button class="btn" data-fqload="${i}">Load</button><button class="btn" data-fqdel="${i}">Delete</button></div>`).join(''):'<div class="hint">Nothing saved yet. Edit a query, give it a name and press Save.</div>';
- el.querySelectorAll('[data-fqload]').forEach(b=>b.onclick=()=>{let x=fqSavedLoad()[+b.dataset.fqload];if(!x)return;let ta=$('#fqQuery');ta.value=x.q;ta.dataset.edited='1';$('#fqTitle').textContent=x.name;$('#fqNotes').innerHTML='';$('#fqGoalLine').textContent='';fqCheck();fqSlidersRender();$('#fqName').value=x.name});
+ el.innerHTML=a.length?a.map((x,i)=>{let lines=String(x.q||'').split('\n').filter(l=>!/^(Market Capitalization|Is not SME)/.test(l.trim()));return `<div class="fqsaved"><b>${escapeHtml(x.name)}</b><span class="hint">${new Date(x.when).toLocaleDateString()} · ${lines.length} rule${lines.length===1?'':'s'}</span><button class="btn" data-fqload="${i}">Load</button><button class="btn" data-fqdel="${i}">Delete</button><div class="fqsq">${escapeHtml(lines.slice(0,3).join('\n').replace(/ AND$/gm,''))}${lines.length>3?'\n…':''}</div></div>`}).join(''):'<div class="hint">Nothing saved yet. Build or edit a query below, type a name in the box next to Save, and press Save.</div>';
+ el.querySelectorAll('[data-fqload]').forEach(b=>b.onclick=()=>{let x=fqSavedLoad()[+b.dataset.fqload];if(!x)return;let ta=$('#fqQuery');ta.value=x.q;ta.dataset.edited='1';$('#fqTitle').textContent='My screen · '+x.name;$('#fqNotes').innerHTML='';$('#fqGoalLine').textContent='';let ps=$('#fqPreset');if(ps)ps.value='';document.querySelectorAll('#fqGoals .fqgoal').forEach(g=>g.classList.remove('on'));fqCheck();fqSlidersRender();fqTuneRender();$('#fqName').value=x.name;$('#fqOut').scrollIntoView({behavior:'smooth',block:'start'})});
  el.querySelectorAll('[data-fqdel]').forEach(b=>b.onclick=()=>{let a=fqSavedLoad();a.splice(+b.dataset.fqdel,1);fqSavedWrite(a);fqSavedRender()});
 }
 function fqInit(){
@@ -6204,7 +6206,7 @@ function fqInit(){
  $('#fqReset').onclick=()=>{let ta=$('#fqQuery');delete ta.dataset.edited;fqRender()};
  $('#fqCopy').onclick=()=>fqCopy($('#fqQuery').value,$('#fqMsg'));
  $('#fqStricter').onclick=fqStricter;$('#fqUndo').onclick=fqUndo;
- $('#fqSave').onclick=()=>{let name=($('#fqName').value||'').trim()||$('#fqTitle').textContent||'My screen';let a=fqSavedLoad().filter(x=>x.name!==name);a.unshift({name,q:$('#fqQuery').value,when:Date.now()});fqSavedWrite(a);fqSavedRender();$('#fqMsg').textContent=`Saved as “${name}” in this browser.`;setTimeout(()=>{$('#fqMsg').textContent=''},4000)};
+ $('#fqSave').onclick=()=>{let name=($('#fqName').value||'').trim()||$('#fqTitle').textContent||'My screen';let a=fqSavedLoad().filter(x=>x.name!==name);a.unshift({name,q:$('#fqQuery').value,when:Date.now()});fqSavedWrite(a);fqSavedRender();fqSlidersRender();$('#fqTitle').textContent='My screen · '+name;$('#fqMsg').textContent=`Saved as “${name}” in this browser; it is listed under My saved screens above.`;setTimeout(()=>{$('#fqMsg').textContent=''},4000)};
  ['targetCagr','holdMonths'].forEach(id=>{let el=$('#'+id);if(el)el.addEventListener('input',()=>{if(fqState.mode==='goal'){let ta=$('#fqQuery');if(ta&&!ta.dataset.edited)fqRender()}})});
  fqSavedRender();fqRender();
 }
