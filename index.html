@@ -361,6 +361,7 @@ body[data-view="screen"] .batchnav{display:none}
 @media(max-width:520px){.decisiongrid{grid-template-columns:1fr!important}}
 .ap .goallink{border:0;background:none;padding:0;font:inherit;color:var(--teal2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .tablewrap{overflow-x:auto}
+#main .batchtable td:nth-child(1){max-width:160px;white-space:normal}#main .batchtable td:nth-child(2){max-width:120px;white-space:normal;font-size:11px;color:var(--muted);line-height:1.25}#main .batchtable td:nth-child(5) .vbadge,#main .batchtable td:nth-child(11) .vbadge{white-space:normal;line-height:1.2;max-width:150px;display:inline-block}#main .batchtable th{white-space:normal;line-height:1.2}
 .pfform{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
 .pfname{display:grid;gap:4px;font-size:13px;color:var(--muted);min-width:260px;flex:0 1 320px}
 #pfList table{margin-top:12px}
@@ -4820,13 +4821,12 @@ function renderBatch(){
  batchMode=true;
  let rows=orderedModelEntries().map(({m,i,r})=>{
    r=r||batchResult(m);
-   if(r.status!=='OK')return `<tr><td><button class="btn" data-open="${i}">${escapeHtml(m.company)}</button></td><td>${r.pi.className||'—'}</td><td>${quickCell(m)}</td><td colspan="12" class="${r.status==='Needs classification'?'statusreq':'statusblock'}">${r.status}</td></tr>`;
+   if(r.status!=='OK')return `<tr><td><button class="btn" data-open="${i}">${escapeHtml(m.company)}</button></td><td>${r.pi.className||'—'}</td><td>${quickCell(m)}</td><td colspan="8" class="${r.status==='Needs classification'?'statusreq':'statusblock'}">${r.status}</td></tr>`;
    return `<tr>
     <td><button class="btn" data-open="${i}">${escapeHtml(m.company)}</button></td>
     <td>${r.pi.className}</td><td>${quickCell(m)}</td><td class="num">₹${fmt(m.price)}</td><td>${verdictBadge(r.verdict)}</td>
-    <td class="num">${pct(r.opp.expectedCagr)}</td><td class="num">${r.acc&&fin(r.acc.need)?pct(r.acc.need,0)+' / '+(fin(r.acc.did5)?pct(r.acc.did5,0):'—'):'—'}</td><td class="num">${r.acc&&r.acc.scen&&fin(r.acc.scen.pBeat)?pct(r.acc.scen.pBeat,0):'—'}</td><td class="num">${pct(r.mos.required)}</td><td class="num">${(()=>{let b=buyCeiling(r);return fin(b.price)?'₹'+fmt(b.price)+(b.cons?'<span class="hint" title="Without re-rating: today\'s P/E held">*</span>':''):'—'})()}</td>
-    <td class="num">${fmt(r.fund.composite,0)}</td><td class="num">${fmt(r.valAttr.score,0)}</td>
-    <td class="num">${r.tech.available?fmt(r.tech.score,0):'—'}</td><td class="num">${fmt(r.v.confidence,0)}</td>
+    <td class="num">${pct(r.opp.expectedCagr)}</td><td class="num" style="white-space:nowrap">${r.acc&&r.acc.scen&&fin(r.acc.scen.pBeat)?`<b>${pct(r.acc.scen.pBeat,0)}</b>`:'—'}${r.acc&&fin(r.acc.need)?`<br><span class="hint" title="Profit growth the price needs / what the company did over five years">${pct(r.acc.need,0)} / ${fin(r.acc.did5)?pct(r.acc.did5,0):'—'}</span>`:''}</td><td class="num">${pct(r.mos.required)}</td><td class="num">${(()=>{let b=buyCeiling(r);return fin(b.price)?'₹'+fmt(b.price)+(b.cons?'<span class="hint" title="Without re-rating: today\'s P/E held">*</span>':''):'—'})()}</td>
+    <td class="num" style="white-space:nowrap" title="Fundamental · Valuation · Technical · Valuation confidence">${fmt(r.fund.composite,0)} · ${fmt(r.valAttr.score,0)} · ${r.tech.available?fmt(r.tech.score,0):'—'} · ${fmt(r.v.confidence,0)}</td>
     <td>${(()=>{let so=secondOpinionEngine(m,r);return so.available?`<span title="Traffic light" style="color:${soLightColor(so.light)};font-weight:900">● ${so.light}</span><br><span class="vbadge ${so.decision.cls}" style="font-size:10px">${escapeHtml(so.decision.label)}</span>`:'<span class="hint">no prices</span>'})()}</td>
    </tr>`;
  }).join('');
@@ -4836,9 +4836,8 @@ function renderBatch(){
   <div id="scanBox"><button class="btn primary" onclick="runScan()" style="margin-bottom:12px">Scan this batch for investment-grade companies</button> <button class="btn" onclick="runQuickScan()" style="margin-bottom:12px">Quick pre-screen (no classes needed)</button></div>
   <div class="batchsort"><span class="hint">Sort companies:</span><button class="btn" data-sort="import">Import order</button><button class="btn" data-sort="az">A → Z</button><button class="btn" data-sort="za">Z → A</button><button class="btn" data-sort="rec">By recommendation</button></div>
   <div class="tablewrap"><table class="batchtable"><thead><tr>
-   <th>Company</th><th>Classification</th><th>Quick grade</th><th class="num">Price</th><th>Action</th><th class="num">Horizon CAGR</th><th class="num" title="Profit growth the price needs (P/E ending at a normal multiple) / what the company did over five years">Needs / did</th><th class="num" title="Odds of meeting your target across bear, base and bull">Odds</th>
-   <th class="num">Req. MoS</th><th class="num">Buy at or below</th><th class="num">Fundamental</th>
-   <th class="num">Valuation</th><th class="num">Technical</th><th class="num">Val. confidence</th><th>Second opinion</th>
+   <th>Company</th><th>Classification</th><th>Quick grade</th><th class="num">Price</th><th>Action</th><th class="num">Horizon CAGR</th><th class="num" title="Odds of meeting your target across bear, base and bull; below it, the profit growth the price needs / what the company did over five years">Odds<br><span class="hint" style="font-weight:400">needs / did</span></th>
+   <th class="num">Req. MoS</th><th class="num">Buy at or below</th><th class="num" title="Fundamental · Valuation · Technical · Valuation confidence">Scores<br><span class="hint" style="font-weight:400">F · V · T · conf</span></th><th>Second opinion</th>
   </tr></thead><tbody>${rows}</tbody></table></div>
   <p class="hint" style="margin-top:12px"><b>Principle:</b> business quality first, valuation second, technicals last. A strong chart cannot rescue an expensive or weak business; a weak chart can only make execution more gradual when the fundamental/valuation case is already positive.</p>
  </div>`;
