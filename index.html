@@ -361,6 +361,11 @@ body[data-view="screen"] .batchnav{display:none}
 @media(max-width:520px){.decisiongrid{grid-template-columns:1fr!important}}
 .ap .goallink{border:0;background:none;padding:0;font:inherit;color:var(--teal2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .tablewrap{overflow-x:auto}
+.accstrip{border-left:4px solid var(--teal2)}.accstriphead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.accstriphead h4{margin:0}
+.accgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px}
+.accitem{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--rule);border-radius:10px;padding:10px 12px;background:#fff;cursor:pointer;font:inherit;color:var(--text);border-left-width:5px}
+.accitem:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}.accitem .acclabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.accitem .accval{font:700 20px var(--serif,Georgia,serif);line-height:1.15}.accitem .accnote{font-size:11.5px;color:var(--muted)}
+.accitem.good{border-left-color:var(--green)}.accitem.good .accval{color:var(--green)}.accitem.mid{border-left-color:#C98A1B}.accitem.mid .accval{color:#9A6A0E}.accitem.bad{border-left-color:var(--red)}.accitem.bad .accval{color:var(--red)}
 .scanpill{cursor:pointer;border:1px solid transparent;font:inherit}.scanpill:hover{filter:brightness(.96)}.scanpill.on{border-color:var(--text);box-shadow:0 0 0 2px #fff inset}
 #main .batchtable td:nth-child(1){max-width:160px;white-space:normal}#main .batchtable td:nth-child(2){max-width:120px;white-space:normal;font-size:11px;color:var(--muted);line-height:1.25}#main .batchtable td:nth-child(5) .vbadge,#main .batchtable td:nth-child(11) .vbadge{white-space:normal;line-height:1.2;max-width:150px;display:inline-block}#main .batchtable th{white-space:normal;line-height:1.2}
 .pfform{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
@@ -5003,12 +5008,13 @@ This remains a screening/valuation model built primarily from exported financial
  </div>
  <div class="scoregrid">${scoreBoxes}</div>
  <div class="tabs" role="tablist" aria-label="Analysis sections">
-  <button class="btn tab active" data-t="overview">Overview</button><button class="btn tab" data-t="plan">Action Plan</button><button class="btn tab" data-t="quick">Quick Grade</button><button class="btn tab" data-t="fundamentals">Fundamentals</button>
+  <button class="btn tab active" data-t="overview">Overview</button><button class="btn tab" data-t="sharper">Odds &amp; checks</button><button class="btn tab" data-t="plan">Action Plan</button><button class="btn tab" data-t="quick">Quick Grade</button><button class="btn tab" data-t="fundamentals">Fundamentals</button>
   <button class="btn tab" data-t="valuation">Valuation, Horizon & MoS</button><button class="btn tab" data-t="technical">Technicals</button><button class="btn tab" data-t="secondop">Second Opinion</button>
   <button class="btn tab" data-t="forensic">Forensic</button><button class="btn tab" data-t="integrity">Integrity & Assumptions</button><button class="btn tab" data-t="pricectx">Price Context</button><button class="btn tab" data-t="waccTab">Discount Rate</button>
   <button class="btn tab" data-t="income">Income</button><button class="btn tab" data-t="memo">Memo</button>
  </div>
  <div class="section active" id="overview">
+  ${accHeadlineHtml(m,r)}
   <div class="panel"><h4>How the verdict was reached</h4><div class="decisiongrid">
    <div class="decisionpill"><div class="k">Business</div><div class="v">${businessLabel}</div><div class="hint">${fmt(fund.businessQuality,0)}/100</div></div>
    <div class="decisionpill"><div class="k">Growth</div><div class="v">${growthLabel}</div><div class="hint">${fmt(fund.growthQuality,0)}/100</div></div>
@@ -5051,6 +5057,7 @@ ${quickGradeSection(m)}
   </div></div></div>
   <div class="panel" style="margin-top:12px"><h4>Six-period statement view</h4><div class="tablewrap"><table><thead><tr><th>Metric</th>${m.sales.slice(-6).map((_,i,arr)=>`<th>${escapeHtml((m.years||[]).slice(-arr.length)[i]||('Y'+(i+1)))}</th>`).join('')}</tr></thead><tbody>${frows}</tbody></table></div></div>
  </div>
+ <div class="section" id="sharper">${accPanelHtml(m,r)}</div>
  <div class="section" id="valuation">
   <div class="callout"><b>Base fair value ₹${fmt(v.fair)}</b><div class="hint">Defensible range ₹${fmt(v.fairLow)}–₹${fmt(v.fairHigh)} • 5Y reference CAGR ${pct(v.exp5)} • valuation confidence ${fmt(v.confidence,0)}/100 • earnings anchor: ${v.earningsBasis?.label||'latest annual'}${(m.oneOffs||[]).some(x=>x)&&coreEarningsOn()?' • one-off other income removed':''}</div>${(()=>{let inv=Math.max(0,last(m.investments)||0),cred=verifiedLiquidInvestments(m),ps=safeDiv(inv-cred,v.shares);if(v.profile==='Rating Agency / Financial Data')return `<div class="hint" style="margin-top:6px">Rating-agency engine: cash and 80% of investments, net of debt (about ₹${fmt(v.engineDiag&&v.engineDiag.netCashAndInvestmentsPerShare,0)} a share), are added to the value of the core rating business. The liquid-investment credit (Settings for experts) does not apply to this class.</div>`;return inv>0&&fin(m.mcap)&&inv-cred>.05*m.mcap?`<div class="hint" style="margin-top:6px">Investments of ₹${fmt(inv-cred,0)} Cr (about ₹${fmt(ps,0)} a share) are not counted in fair value. If part of it is liquid (not group or strategic holdings), raise the liquid-investment credit under Settings for experts on the Get data page.</div>`:''})()}</div>
   <div class="panel" style="margin-top:12px"><h4>Selected-horizon opportunity lens</h4><div class="opportunitygrid">
@@ -5065,7 +5072,7 @@ ${quickGradeSection(m)}
    <div class="metricbox"><div class="k">Equity tax lens</div><div class="mv"><span class="taxbadge ${opp.ltcg?'taxlt':'taxst'}">${opp.taxLabel.replace('-rate lens','')}</span></div><div class="subv">${pct(opp.capTax)} entered rate</div></div>
    <div class="metricbox"><div class="k">No-re-rating CAGR</div><div class="mv">${pct(opp.noReratingCagr)}</div><div class="subv">current P/E held constant</div></div>
   </div><div class="two" style="margin-top:12px"><div class="panel"><h4>What must happen?</h4><div class="waterfall"><div class="wf"><span>Required EPS CAGR</span><b>${pct(opp.requiredGrowth)}</b></div><div class="wf"><span>Required exit P/E</span><b>${fmt(opp.requiredExitPE,1)}x</b></div><div class="wf"><span>Valuation change</span><b>${opp.reRatingLabel}</b></div><div class="wf"><span>No-re-rating CAGR</span><b>${pct(opp.noReratingCagr)}</b></div><div class="wf"><span>Re-rating dependence</span><b>${pct(opp.reratingDependence)}</b></div><div class="wf"><span>Projected terminal price</span><b>₹${fmt(opp.terminalPrice)}</b></div></div></div><div class="panel"><h4>Opportunity-cost comparison</h4><div class="waterfall"><div class="wf"><span>Alternative pre-tax</span><b>${pct(opp.altPreTax)}</b></div><div class="wf"><span>Alternative tax rate</span><b>${pct(opp.altTax)}</b></div><div class="wf"><span>Alternative after-tax</span><b>${pct(opp.altAfterTax)}</b></div><div class="wf"><span>Equity tax lens</span><b>${opp.taxLabel} @ ${pct(opp.capTax)}</b></div><div class="wf"><span>Equity after-tax CAGR</span><b>${pct(opp.afterTaxCagr)}</b></div><div class="wf"><span>After-tax advantage</span><b>${pct(opp.excessAfterTax)}</b></div></div><p class="hint">${opp.taxAssumption}</p></div></div></div>
-  ${sensitivityHtml(sensitivityGrid(m,v,opp))}${reinvestmentHtml(reinvestmentCheck(m,v),v)}${accPanelHtml(m,r)}
+  ${sensitivityHtml(sensitivityGrid(m,v,opp))}${reinvestmentHtml(reinvestmentCheck(m,v),v)}
   <div class="two" style="margin-top:12px"><div class="panel"><h4>Dynamic margin of safety</h4><div class="waterfall">
    <div class="wf"><span>Base MoS floor</span><b>${pct(mos.base)}</b></div><div class="wf"><span>Risk additions / reductions</span><b>${pct(mos.risk)}</b></div>
    <div class="wf"><span>Required MoS</span><b>${pct(mos.required)}</b></div><div class="wf"><span>Actual MoS</span><b>${pct(mos.actual)}</b></div>
@@ -5389,7 +5396,7 @@ runSelfTests();
 var uiView='data',uiLastModel=null,uiLastScan='';
 function uiToast(t){let d=document.getElementById('uiToast');if(!d){d=document.createElement('div');d.id='uiToast';d.className='uitoast';d.setAttribute('role','status');document.body.appendChild(d)}d.textContent=t;d.classList.add('on');clearTimeout(d._t);d._t=setTimeout(()=>d.classList.remove('on'),2600)}
 const UI_GROUPS=[
- ['Decide',[['overview','Why this verdict'],['plan','Action plan'],['quick','Quick grade'],['memo','Memo']]],
+ ['Decide',[['overview','Why this verdict'],['sharper','Odds & checks'],['plan','Action plan'],['quick','Quick grade'],['memo','Memo']]],
  ['Business',[['fundamentals','Fundamentals'],['forensic','Red flags'],['income','Dividends']]],
  ['Price and chart',[['valuation','Valuation'],['technical','Daily chart'],['secondop','Second opinion'],['pricectx','Price history']]],
  ['Details',[['integrity','Data checks'],['waccTab','Discount rate']]]
@@ -5651,6 +5658,20 @@ function accInShort(dd,P,C){
   if(fin(c.fcfConv)&&c.fcfConv<.3&&fin(c.incr)&&c.incr<.12)C(5,`Only ${pct(Math.max(0,c.fcfConv),0)} of five-year profit became free cash, and the plant it bought earns little.`)}
  if(acc.peers&&fin(r.v.pe)&&r.v.pe>acc.peers.median*1.3)C(4,`Exit P/E ${fmt(r.v.pe,1)}x is well above the ${fmt(acc.peers.median,1)}x median of ${acc.peers.n} Screener peers.`);
 }
+// Overview strip: the handful of things not to miss, each with a colour and a jump to the Odds & checks page
+function accHeadlineHtml(m,r){
+ let acc=r&&r.acc;if(!acc)return '';let t=r.opp.target,items=[];
+ const add=(cls,label,val,note)=>items.push({cls,label,val,note});
+ if(fin(acc.need)){let d=fin(acc.did5)?acc.need-acc.did5:NaN;add(!fin(d)?'':d>.06?'bad':d<-.03?'good':'mid','Growth the price needs',pct(acc.need,0)+' a year',fin(acc.did5)?`company did ${pct(acc.did5,0)} over 5 years`:'no 5-year record')}
+ if(acc.scen&&fin(acc.scen.pBeat))add(acc.scen.pBeat>=ACC_STRONG_ODDS?'good':acc.scen.pBeat>=ACC_ACC_ODDS?'mid':'bad',`Odds of ${pct(t,0)} a year`,pct(acc.scen.pBeat,0),`bear ${pct(acc.scen.bear.cagr,0)} · bull ${pct(acc.scen.bull.cagr,0)}`);
+ if(acc.margin){let mg=acc.margin;add(mg.apply?'bad':mg.trough?'good':'mid','Operating margin vs its normal',`${pct(mg.cur,0)} vs ${pct(mg.med,0)}`,mg.apply?`peak: buy ceiling cut to ₹${fmt(acc.ceilingNorm,0)}`:mg.trough?'depressed, not inflated':'near normal')}
+ let c=acc.cap;if(c&&!c.lender){if(fin(c.incr))add(c.incr>=.18?'good':c.incr>=.10?'mid':'bad','Return on new capital',pct(c.incr,0),c.incr<.10?'growth is being bought':c.incr>=.18?'growth creates value':'adequate');
+  if(fin(c.dilution)&&c.dilution>=.02)add(c.dilution>=.05?'bad':'mid','Dilution',pct(c.dilution,1)+' a year','share count rising');
+  if(fin(c.fcfConv))add(c.fcfConv>=.6?'good':c.fcfConv>=.3?'mid':'bad','Profit that became cash',pct(Math.max(0,c.fcfConv),0),'five years')}
+ if(acc.peers)add(fin(r.v.pe)&&r.v.pe>acc.peers.median*1.3?'bad':r.v.pe<=acc.peers.median?'good':'mid','Exit P/E vs peers',`${fmt(r.v.pe,0)}x vs ${fmt(acc.peers.median,0)}x`,`${acc.peers.n} Screener peers`);
+ if(!items.length)return '';
+ return `<div class="panel accstrip"><div class="accstriphead"><h4>Do not miss</h4><button type="button" class="btn" onclick="document.querySelector('.tab[data-t=sharper]').click()">Open Odds &amp; checks →</button></div><div class="accgrid">${items.map(x=>`<button type="button" class="accitem ${x.cls}" onclick="document.querySelector('.tab[data-t=sharper]').click()"><span class="acclabel">${x.label}</span><span class="accval">${x.val}</span><span class="accnote">${escapeHtml(x.note)}</span></button>`).join('')}</div>${acc.changed?`<div class="flag warn" style="margin-top:10px"><b>These checks changed the verdict.</b> ${escapeHtml(acc.changed.replace(/^Sharper checks: /,''))}</div>`:''}</div>`;
+}
 // Deep-dive panel
 function accPanelHtml(m,r){
  let acc=r&&r.acc;if(!acc)return '';let opp=r.opp,v=r.v,t=opp.target;
@@ -5660,7 +5681,7 @@ function accPanelHtml(m,r){
  let sc=acc.scen,scen=sc?`<div class="panel"><h4>Three scenarios</h4><div class="tablewrap"><table><thead><tr><th></th><th class="num">Growth</th><th class="num">Exit P/E</th><th class="num">Price in ${escapeHtml(opp.label)}</th><th class="num">Return a year</th></tr></thead><tbody>${[['Bear',sc.bear],['Base',sc.base],['Bull',sc.bull]].map(([k,s])=>`<tr><td>${k}</td><td class="num">${pct(s.g,0)}</td><td class="num">${fmt(s.pe,1)}x</td><td class="num">₹${fmt(s.price,0)}</td><td class="num" style="${fin(s.cagr)?(s.cagr>=t?'color:var(--green)':s.cagr<opp.altPreTax?'color:var(--red)':''):''}">${pct(s.cagr,1)}</td></tr>`).join('')}</tbody></table></div><div class="waterfall" style="margin-top:8px">${row('Weighted return (25 / 50 / 25)',pct(sc.mean,1))}${row(`Odds of meeting your ${pct(t,0)} target`,pct(sc.pBeat,0),sc.pBeat>=ACC_STRONG_ODDS?'good':sc.pBeat>=ACC_ACC_ODDS?'fair':'poor')}${row('Odds of losing money over the horizon',pct(sc.pLoss,0))}</div><p class="hint">Growth moves by ±${pct(sc.spread,0)} (half the company's own year-to-year swing, between 4 and 12 points); the exit P/E by −20% / +15% around today's and the adopted multiple. A single fair value pretends to a precision nobody has; the odds are what you can act on.</p></div>`:'';
  let c=acc.cap,cap=c&&!c.lender?`<div class="panel"><h4>Capital discipline</h4><div class="waterfall">${row(`Return on new capital (${c.span||5}Y)`,pct(c.incr,0),fin(c.roic)?`existing business earns ${pct(c.roic,0)}`:'')}${row('Share count change a year (5Y)',fin(c.dilution)?(c.dilution>=0?'+':'')+pct(c.dilution,1):'—',fin(c.dilution)&&c.dilution>.02?'dilution':'')}${row('Free cash ÷ profit (5Y)',pct(c.fcfConv,0),c.fcfYears?`${c.fcfYears} years`:'')}</div><p class="hint">Return on new capital = rise in operating profit after tax ÷ capital added. It predicts future returns better than today's ROCE does. Free cash = operating cash flow less capital spending.</p></div>`:'';
  let p=acc.peers,peers=p?`<div class="panel"><h4>Peers on Screener</h4><div class="waterfall">${row(`Median P/E of ${p.n} peers`,fmt(p.median,1)+'x',`range ${fmt(p.low,0)}–${fmt(p.high,0)}x`)}${row('Exit P/E adopted here',fmt(v.pe,1)+'x',v.peCal&&/peers/.test(v.peCal.basis||'')?'capped by peers':'')}${row("Today's P/E",fmt(v.currentPE,1)+'x')}</div><div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Peer</th><th class="num">P/E</th><th class="num">ROCE</th><th class="num">Mkt cap ₹Cr</th></tr></thead><tbody>${p.rows.map(x=>`<tr><td>${escapeHtml(x.name||'')}</td><td class="num">${fin(+x.pe)?fmt(+x.pe,1):'—'}</td><td class="num">${fin(+x.roce)?fmt(+x.roce,1)+'%':'—'}</td><td class="num">${fin(+x.mcap)?fmt(+x.mcap,0):'—'}</td></tr>`).join('')}</tbody></table></div><p class="hint">Captured ${escapeHtml(p.captured||'')} by the Screener bookmark. The exit P/E is not allowed more than 30% above the peer median unless you set it yourself.</p></div>`:`<div class="panel"><h4>Peers on Screener</h4><p class="hint">No peer table in the notes file. Export the company again with the current bookmark (13.0) and the peers' P/Es are captured for the exit-multiple check.</p></div>`;
- return `<div class="callout" style="margin-top:12px"><b>Sharper checks (13.0)</b><div class="hint">${acc.changed?escapeHtml(acc.changed):(acc.margin&&acc.margin.apply&&fin(acc.ceilingNorm)?`The verdict stands; the buy ceiling was lowered to ₹${fmt(acc.ceilingNorm,0)} by the normal-margin check.`:'None of these checks changed the verdict.')}</div></div><div class="two" style="margin-top:12px">${need}${margin}</div><div class="two" style="margin-top:12px">${scen}${cap}</div><div style="margin-top:12px">${peers}</div>`;
+ return `<div class="callout" style="margin-top:12px"><b>Odds &amp; checks</b> — the six tests that make the fair value and the verdict less wrong. <div class="hint">${acc.changed?escapeHtml(acc.changed):(acc.margin&&acc.margin.apply&&fin(acc.ceilingNorm)?`The verdict stands; the buy ceiling was lowered to ₹${fmt(acc.ceilingNorm,0)} by the normal-margin check.`:'None of these checks changed the verdict.')}</div></div><div class="two" style="margin-top:12px">${need}${margin}</div><div class="two" style="margin-top:12px">${scen}${cap}</div><div style="margin-top:12px">${peers}</div>`;
 }
 // ---- Scorecard: every verdict kept (one per company per day), checked against later prices ----
 const ACC_LOG_KEY='sdd_verdict_log_v1';
