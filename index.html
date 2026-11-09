@@ -361,7 +361,12 @@ body[data-view="screen"] .batchnav{display:none}
 @media(max-width:520px){.decisiongrid{grid-template-columns:1fr!important}}
 .ap .goallink{border:0;background:none;padding:0;font:inherit;color:var(--teal2);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .tablewrap{overflow-x:auto}
-.accstrip{border-left:4px solid var(--teal2)}.accstriphead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.accstriphead h4{margin:0}
+.fqsliders{margin-top:8px;border:1px solid var(--rule);border-radius:10px;padding:8px 12px;background:#fff}.fqsliders summary{cursor:pointer;font-weight:600}.fqsliders summary .hint{font-weight:400;margin-left:6px}
+.fqsl{display:grid;grid-template-columns:minmax(160px,1.4fr) 2fr 70px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule);font-size:13px}.fqsl:last-child{border-bottom:0}.fqsl input[type=range]{width:100%;margin:0}.fqsl b{font-variant-numeric:tabular-nums;text-align:right}.fqsl .fqslf{color:var(--muted)}.fqsl .fqslf i{font-style:normal;color:var(--text)}
+@media(max-width:760px){.fqsliders{display:none}}
+.snowpanel{margin-bottom:12px}.snowwrap{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start}@media(max-width:700px){.snowwrap{grid-template-columns:1fr}}
+.snowlist ul{list-style:none;padding:0;margin:6px 0 0}.snowlist li{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--rule);font-size:13px}.snowlist li span{font-weight:900;width:14px;flex:none}.snowlist li.ok span{color:var(--green)}.snowlist li.no span{color:var(--red)}.snowlist li.na{color:var(--muted)}
+.accstrip{border-left:4px solid var(--teal2);margin-top:12px}.accstriphead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.accstriphead h4{margin:0}
 .accgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px}
 .accitem{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--rule);border-radius:10px;padding:10px 12px;background:#fff;cursor:pointer;font:inherit;color:var(--text);border-left-width:5px}
 .accitem:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}.accitem .acclabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.accitem .accval{font:700 20px var(--serif,Georgia,serif);line-height:1.15}.accitem .accnote{font-size:11.5px;color:var(--muted)}
@@ -452,6 +457,7 @@ details.notes{background:var(--surface);border:1px solid var(--rule);border-radi
    <div class="fqhead"><b id="fqTitle"></b><button class="btn" type="button" id="fqReset" title="Throw away your edits and rebuild from the choices above">Rebuild</button></div>
    <textarea id="fqQuery" spellcheck="false" rows="12" aria-label="Screener query"></textarea>
    <div class="hint" id="fqCheck" style="margin-top:6px"></div>
+   <details class="fqsliders" id="fqSliders" open><summary>Fine-tune with sliders <span class="hint">one per rule; the query above changes as you drag</span></summary><div id="fqSliderList"></div></details>
    <div class="fqtune"><span class="hint">Count on Screener too high or too low?</span><button class="btn" type="button" id="fqStricter">Stricter: add the next rule</button><button class="btn" type="button" id="fqUndo" disabled>Undo</button><span class="hint" id="fqTuneHint"></span></div>
    <div class="fqbtns"><button class="btn primary" type="button" id="fqCopy">Copy query</button><a class="btn" href="https://www.screener.in/screen/new/" target="_blank" rel="noopener">Open Screener's query page</a><input id="fqName" placeholder="Name it to save" aria-label="Name for the saved screen"><button class="btn" type="button" id="fqSave">Save</button></div>
    <div class="hint" id="fqMsg" style="min-height:18px;margin-top:4px"></div>
@@ -5658,6 +5664,85 @@ function accInShort(dd,P,C){
   if(fin(c.fcfConv)&&c.fcfConv<.3&&fin(c.incr)&&c.incr<.12)C(5,`Only ${pct(Math.max(0,c.fcfConv),0)} of five-year profit became free cash, and the plant it bought earns little.`)}
  if(acc.peers&&fin(r.v.pe)&&r.v.pe>acc.peers.median*1.3)C(4,`Exit P/E ${fmt(r.v.pe,1)}x is well above the ${fmt(acc.peers.median,1)}x median of ${acc.peers.n} Screener peers.`);
 }
+// ---- Five-axis picture: Value, Growth, Quality, Health, Dividend; six yes/no checks on each ----
+function accSnowChecks(m,r){
+ let acc=r.acc||{},v=r.v,opp=r.opp,s=score(m),t=opp.target,lender=ACC_LENDERS.includes(v.profile),f=r.fund||{};
+ let b=buyCeiling(r),cap=acc.cap||{},sc=acc.scen,mg=acc.margin;
+ const L=(ok,text)=>({ok:ok===null||ok===undefined?null:!!ok,text});
+ let eq=last(m.equity)+last(m.reserves),de=s.de,ic=safeDiv(last(m.ebitda),last(m.interest)),cash=last(m.cash),debt=last(m.debt);
+ let div=m.dividend||[],dps=last(div),yld=fin(dps)&&fin(m.shares)&&fin(m.price)&&last(m.shares)>0?dps/last(m.shares)/m.price:NaN;
+ // dividend series helpers
+ let d5=div.slice(-5).filter(fin),paidAll=d5.length>=5&&d5.every(x=>x>0),dGrew=d5.length>=5&&d5[4]>d5[0],pat5=last(m.pat),payout=fin(dps)&&fin(pat5)&&pat5>0?dps/pat5:NaN;
+ let fcfLast=NaN;{let n=m.pat.length-1,nb=m.netBlock||[],cw=m.cwip||[],dp=m.dep||[];if(n>=1&&fin(m.cfo[n])&&fin(nb[n])&&fin(nb[n-1])){let capex=(nb[n]+(cw[n]||0))-(nb[n-1]+(cw[n-1]||0))+(dp[n]||0);fcfLast=m.cfo[n]-Math.max(0,capex)}}
+ let flags=(s.forensic&&s.forensic.flags)||[];flags=Array.isArray(flags)?flags:[];let flagN=flags.filter(x=>Array.isArray(x)?x[0]!=='info':true).length;
+ let value=[
+  L(fin(v.fair)&&m.price<v.fair,`Price below fair value (₹${fmt(v.fair,0)})`),
+  L(fin(b.price)&&m.price<=b.price,`Price at or below the buy ceiling (₹${fmt(b.price,0)})`),
+  L(sc?sc.pBeat>=ACC_ACC_ODDS:null,sc?`Odds of your ${pct(t,0)} target at least ${pct(ACC_ACC_ODDS,0)} (${pct(sc.pBeat,0)})`:'Odds not computable'),
+  L(fin(acc.need)&&fin(acc.did5)?acc.need<=acc.did5:null,fin(acc.need)?`Growth the price needs (${pct(acc.need,0)}) within what the company delivered (${fin(acc.did5)?pct(acc.did5,0):'—'})`:'No 5-year record'),
+  L(fin(opp.basePE)&&fin(v.pe)?opp.basePE<=v.pe*1.05:null,`Today's P/E (${fmt(opp.basePE,0)}x) not above its normal (${fmt(v.pe,0)}x)`),
+  acc.peers?L(fin(opp.basePE)&&opp.basePE<=acc.peers.median,`P/E not above the peers' median (${fmt(acc.peers.median,0)}x)`):L(fin(opp.expectedCagr)&&opp.expectedCagr>=t,`Expected return (${pct(opp.expectedCagr,0)}) meets your target`)
+ ];
+ let growth=[
+  L(fin(acc.did5)?acc.did5>=.10:null,`Profit grew at least 10% a year over 5 years (${fin(acc.did5)?pct(acc.did5,0):'—'})`),
+  L(fin(acc.sales5)?acc.sales5>=.08:null,`Sales grew at least 8% a year over 5 years (${fin(acc.sales5)?pct(acc.sales5,0):'—'})`),
+  L(fin(acc.did3)?acc.did3>=.10:null,`Profit grew at least 10% a year over 3 years (${fin(acc.did3)?pct(acc.did3,0):'—'})`),
+  L(fin(s.p1)?s.p1>0:null,`Profit rose in the latest year (${fin(s.p1)?pct(s.p1,0):'—'})`),
+  L(fin(v.g1)?v.g1>=.10:null,`Growth adopted for the next years at least 10% (${fin(v.g1)?pct(v.g1,0):'—'})`),
+  lender?L(fin(s.roe)?s.roe>=.12:null,`Return on equity at least 12% (${fin(s.roe)?pct(s.roe,0):'—'})`):L(fin(cap.incr)?cap.incr>=.12:null,`New capital earns at least 12% (${fin(cap.incr)?pct(cap.incr,0):'—'})`)
+ ];
+ let quality=[
+  L(fin(s.roe)?s.roe>=.15:null,`Return on equity at least 15% (${fin(s.roe)?pct(s.roe,0):'—'})`),
+  lender?L(fin(f.businessQuality)?f.businessQuality>=60:null,`Business score at least 60 (${fmt(f.businessQuality,0)})`):L(fin(s.opm)?s.opm>=.10:null,`Operating margin at least 10% (${fin(s.opm)?pct(s.opm,0):'—'})`),
+  lender?L(fin(f.accountingQuality)?f.accountingQuality>=60:null,`Accounting score at least 60 (${fmt(f.accountingQuality,0)})`):L(fin(s.cfoPatAgg)?s.cfoPatAgg>=.7:null,`Operating cash at least 70% of profit over 5 years (${fin(s.cfoPatAgg)?pct(s.cfoPatAgg,0):'—'})`),
+  L(mg?!mg.apply:null,mg?(mg.apply?`Margin at a peak (${pct(mg.cur,0)} vs normal ${pct(mg.med,0)})`:`Margin near its normal (${pct(mg.cur,0)} vs ${pct(mg.med,0)})`):'Margin history too short'),
+  L(flagN===0,flagN?`${flagN} forensic flag${flagN===1?'':'s'}`:'No forensic flags'),
+  L(fin(f.composite)?f.composite>=65:null,`Fundamental composite at least 65 (${fmt(f.composite,0)})`)
+ ];
+ let health=lender?[
+  L(fin(s.roe)?s.roe>=.10:null,`Return on equity at least 10% (${fin(s.roe)?pct(s.roe,0):'—'})`),
+  L(fin(acc.did5)?acc.did5>=0:null,'Profit not lower than 5 years ago'),
+  L(fin(cap.dilution)?cap.dilution<=.03:null,`Share count growing under 3% a year (${fin(cap.dilution)?pct(cap.dilution,1):'—'})`),
+  L(fin(m.pledge)?m.pledge===0:null,fin(m.pledge)?(m.pledge?`Promoter pledge ${fmt(m.pledge,1)}%`:'No promoter pledge'):'Pledge not in the export'),
+  L(fin(s.p1)?s.p1>-.2:null,'No sharp profit fall in the latest year'),
+  L(r.verdict!=='AVOID — FUNDAMENTAL RISK','Not flagged as a fundamental risk')
+ ]:[
+  L(fin(de)?de<=.5:null,`Debt under half of equity (${fin(de)?fmt(de,2):'—'}x)`),
+  L(fin(ic)?ic>=4:(fin(last(m.interest))&&last(m.interest)===0?true:null),`Operating profit covers interest at least 4 times (${fin(ic)?fmt(ic,1)+'x':'no interest'})`),
+  L(fin(cash)&&fin(debt)?cash>=debt||safeDiv(debt-cash,last(m.ebitda))<=2:null,`Net debt under 2 years of operating profit`),
+  L(!flags.some(x=>/capex funded by debt/i.test(Array.isArray(x)?x[1]:String(x))),'Capital spending not funded by new debt'),
+  L(fin(cap.dilution)?cap.dilution<=.02:null,`Share count growing under 2% a year (${fin(cap.dilution)?pct(cap.dilution,1):'—'})`),
+  L(fin(m.pledge)?m.pledge===0:null,fin(m.pledge)?(m.pledge?`Promoter pledge ${fmt(m.pledge,1)}%`:'No promoter pledge'):'Pledge not in the export')
+ ];
+ let dividend=[
+  L(fin(dps)?dps>0:null,fin(dps)&&dps>0?'Pays a dividend':'No dividend'),
+  L(fin(yld)?yld>=.01:null,`Yield at least 1% (${fin(yld)?pct(yld,1):'—'})`),
+  L(fin(payout)?(lender?payout>=.10&&payout<=.5:payout>=.2&&payout<=.6):null,`Payout in a sensible band (${fin(payout)?pct(payout,0):'—'})`),
+  L(d5.length>=5?dGrew:null,'Dividend higher than 5 years ago'),
+  L(d5.length>=5?paidAll:null,'Paid every year for 5 years'),
+  lender?L(fin(payout)?payout<=.4:null,'Payout leaves capital for growth'):L(fin(fcfLast)&&fin(dps)?fcfLast>=dps:null,'Last dividend covered by free cash flow')
+ ];
+ const sum=a=>{let ok=a.filter(x=>x.ok===true).length,n=a.filter(x=>x.ok!==null).length;return {ok,n,score:n?ok/n:0}};
+ return [['Value',value],['Growth',growth],['Quality',quality],['Health',health],['Dividend',dividend]].map(([name,checks])=>({name,checks,...sum(checks)}));
+}
+function accSnowHtml(m,r){
+ let axes;try{axes=accSnowChecks(m,r)}catch(e){console.warn('snow',e);return ''}
+ const R=88,cx=160,cy=128,n=axes.length,ang=i=>-Math.PI/2+i*2*Math.PI/n;
+ const pt=(i,k)=>[cx+Math.cos(ang(i))*R*k,cy+Math.sin(ang(i))*R*k];
+ let rings=[.33,.67,1].map(k=>`<polygon points="${axes.map((_,i)=>pt(i,k).map(x=>x.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="var(--rule)" stroke-width="1"/>`).join('');
+ let spokes=axes.map((_,i)=>{let [x,y]=pt(i,1);return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--rule)"/>`}).join('');
+ let poly=axes.map((a,i)=>pt(i,Math.max(.06,a.score)).map(x=>x.toFixed(1)).join(',')).join(' ');
+ let labels=axes.map((a,i)=>{let [x,y]=pt(i,1.24);let anchor=Math.abs(Math.cos(ang(i)))<.2?'middle':Math.cos(ang(i))>0?'start':'end';let col=a.score>=.67?'var(--green)':a.score>=.4?'#9A6A0E':'var(--red)';return `<g class="snowlbl" data-ax="${i}" style="cursor:pointer"><text x="${x.toFixed(1)}" y="${(y-2).toFixed(1)}" text-anchor="${anchor}" font-size="11.5" font-weight="700" fill="var(--text)">${a.name}</text><text x="${x.toFixed(1)}" y="${(y+11).toFixed(1)}" text-anchor="${anchor}" font-size="11" fill="${col}">${a.ok}/${a.n}</text></g>`}).join('');
+ let dots=axes.map((a,i)=>{let [x,y]=pt(i,Math.max(.06,a.score));return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="var(--teal2)" class="snowdot" data-ax="${i}" style="cursor:pointer"/>`}).join('');
+ let total=axes.reduce((s,a)=>s+a.ok,0),tn=axes.reduce((s,a)=>s+a.n,0);
+ let weakest=axes.reduce((w,a,i)=>a.score<axes[w].score?i:w,0);
+ let lists=axes.map((a,i)=>`<div class="snowlist" data-ax="${i}" style="${i===weakest?'':'display:none'}"><b>${a.name}: ${a.ok} of ${a.n}</b><ul>${a.checks.map(c=>`<li class="${c.ok===true?'ok':c.ok===false?'no':'na'}"><span>${c.ok===true?'✓':c.ok===false?'✗':'·'}</span>${escapeHtml(c.text)}</li>`).join('')}</ul></div>`).join('');
+ return `<div class="panel snowpanel"><div class="snowwrap"><div><h4 style="margin:0 0 4px">Five-point picture <span class="hint" style="font-weight:400">${total} of ${tn} checks pass</span></h4><svg viewBox="0 0 320 262" width="320" height="262" style="max-width:100%;overflow:visible" role="img" aria-label="Five-axis chart">${rings}${spokes}<polygon points="${poly}" fill="rgba(13,110,110,.22)" stroke="var(--teal2)" stroke-width="2"/>${dots}${labels}</svg><div class="hint">Tap an axis for its six checks. The shape is a summary, not a verdict.</div></div><div class="snowlists">${lists}</div></div></div>`;
+}
+{const snowShow=el=>{let p=el.closest('.snowpanel');if(!p)return;let i=el.dataset.ax;p.querySelectorAll('.snowlist').forEach(l=>l.style.display=l.dataset.ax===String(i)?'':'none');p.querySelectorAll('.snowlbl text').forEach(t=>t.style.textDecoration='');p.querySelectorAll(`.snowlbl[data-ax="${i}"] text`).forEach(t=>t.style.textDecoration='underline')};
+ document.addEventListener('click',e=>{let el=e.target.closest&&e.target.closest('.snowlbl,.snowdot');if(el)snowShow(el)});
+ document.addEventListener('mouseover',e=>{let el=e.target.closest&&e.target.closest('.snowlbl,.snowdot');if(el)snowShow(el)});}
+
 // Overview strip: the handful of things not to miss, each with a colour and a jump to the Odds & checks page
 function accHeadlineHtml(m,r){
  let acc=r&&r.acc;if(!acc)return '';let t=r.opp.target,items=[];
@@ -5669,8 +5754,8 @@ function accHeadlineHtml(m,r){
   if(fin(c.dilution)&&c.dilution>=.02)add(c.dilution>=.05?'bad':'mid','Dilution',pct(c.dilution,1)+' a year','share count rising');
   if(fin(c.fcfConv))add(c.fcfConv>=.6?'good':c.fcfConv>=.3?'mid':'bad','Profit that became cash',pct(Math.max(0,c.fcfConv),0),'five years')}
  if(acc.peers)add(fin(r.v.pe)&&r.v.pe>acc.peers.median*1.3?'bad':r.v.pe<=acc.peers.median?'good':'mid','Exit P/E vs peers',`${fmt(r.v.pe,0)}x vs ${fmt(acc.peers.median,0)}x`,`${acc.peers.n} Screener peers`);
- if(!items.length)return '';
- return `<div class="panel accstrip"><div class="accstriphead"><h4>Do not miss</h4><button type="button" class="btn" onclick="document.querySelector('.tab[data-t=sharper]').click()">Open Odds &amp; checks →</button></div><div class="accgrid">${items.map(x=>`<button type="button" class="accitem ${x.cls}" onclick="document.querySelector('.tab[data-t=sharper]').click()"><span class="acclabel">${x.label}</span><span class="accval">${x.val}</span><span class="accnote">${escapeHtml(x.note)}</span></button>`).join('')}</div>${acc.changed?`<div class="flag warn" style="margin-top:10px"><b>These checks changed the verdict.</b> ${escapeHtml(acc.changed.replace(/^Sharper checks: /,''))}</div>`:''}</div>`;
+ if(!items.length)return accSnowHtml(m,r);
+ return accSnowHtml(m,r)+`<div class="panel accstrip"><div class="accstriphead"><h4>Do not miss</h4><button type="button" class="btn" onclick="document.querySelector('.tab[data-t=sharper]').click()">Open Odds &amp; checks →</button></div><div class="accgrid">${items.map(x=>`<button type="button" class="accitem ${x.cls}" onclick="document.querySelector('.tab[data-t=sharper]').click()"><span class="acclabel">${x.label}</span><span class="accval">${x.val}</span><span class="accnote">${escapeHtml(x.note)}</span></button>`).join('')}</div>${acc.changed?`<div class="flag warn" style="margin-top:10px"><b>These checks changed the verdict.</b> ${escapeHtml(acc.changed.replace(/^Sharper checks: /,''))}</div>`:''}</div>`;
 }
 // Deep-dive panel
 function accPanelHtml(m,r){
@@ -6031,7 +6116,7 @@ function fqRender(){
  $('#fqTitle').textContent=title;
  $('#fqNotes').innerHTML=notes.map(n=>`<li>${escapeHtml(n)}</li>`).join('');
  $('#fqGoalLine').textContent=fqState.mode==='goal'?`Uses your goal: ${target.toFixed(1)}% a year over ${horizonLabel(Math.round(years*12))}. Change it in Your goal on the Screen or Deep dive page.`:'';
- fqCheck();fqTuneRender();
+ fqCheck();fqTuneRender();fqSlidersRender();
 }
 
 function fqMarkPresets(target,years){let ps=$('#fqPreset');if(!ps)return;ps.querySelectorAll('option[value]').forEach(o=>{let p=FQ_PRESETS.find(x=>x.id===o.value);if(!p)return;let fit=fqFit(p.h,p.r,target,years).ok;o.textContent=`${fit?'★ ':''}${p.id} · ${p.n}`})}
@@ -6046,8 +6131,33 @@ function fqTuneRender(){
  u.disabled=!fqState.added.length;
  h.innerHTML=`<b>Too many:</b> press Stricter; each press adds one rule, in the order that cuts best. <b>Too few:</b> ${escapeHtml(L.loose)}.`;
 }
-function fqStricter(){let L=fqLadder(),ta=$('#fqQuery');let next=L.lines.find(l=>!fqState.added.includes(l)&&!(ta.value||'').includes(l));if(!next)return;ta.value=ta.value.replace(/\s+$/,'')+' AND\n'+next;ta.dataset.edited='1';fqState.added.push(next);fqCheck();fqTuneRender()}
-function fqUndo(){let ta=$('#fqQuery'),last=fqState.added.pop();if(!last)return;ta.value=ta.value.replace(new RegExp('\\s*AND\\n'+last.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*$'),'');fqCheck();fqTuneRender()}
+function fqStricter(){let L=fqLadder(),ta=$('#fqQuery');let next=L.lines.find(l=>!fqState.added.includes(l)&&!(ta.value||'').includes(l));if(!next)return;ta.value=ta.value.replace(/\s+$/,'')+' AND\n'+next;ta.dataset.edited='1';fqState.added.push(next);fqCheck();fqTuneRender();fqSlidersRender()}
+function fqUndo(){let ta=$('#fqQuery'),last=fqState.added.pop();if(!last)return;ta.value=ta.value.replace(new RegExp('\\s*AND\\n'+last.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*$'),'');fqCheck();fqTuneRender();fqSlidersRender()}
+// Sliders: every simple rule in the query (Field > 15, Field < 0.5, Current price > High price * 0.9) gets a slider;
+// dragging rewrites that one number in the query box. Grouped OR blocks are left to the text.
+function fqSliderSpec(line){
+ let m=line.match(/^(.*?\S)\s*(>=|<=|>|<|=)\s*(-?\d+(?:\.\d+)?)\s*$/);let mult=false;
+ if(!m){m=line.match(/^(.*\*\s*)(-?\d+(?:\.\d+)?)\s*$/);if(!m)return null;mult=true;m=[m[0],m[1].replace(/\*\s*$/,'').trim(),'×',m[2]]}
+ let field=m[1],op=m[2],val=+m[3],lo=0,hi,step;
+ if(!mult&&val===0)return null; // 'Profit after tax > 0' is a sanity rule, not a dial
+ if(mult){lo=.1;hi=3;step=.05}
+ else if(/RSI|Pledged|holding|payout|OPM|NPM|yield|margin/i.test(field)&&!/growth/i.test(field)){hi=100;step=1}
+ else if(/Market Capitalization|Sales\b|Profit\b|Debt\b|Cash|Equivalents|Reserves|Market value|Free cash flow|Volume/i.test(field)&&Math.abs(val)>=20){hi=Math.max(val*4,2000);step=Math.max(10,Math.round(hi/400/10)*10)}
+ else if(/Debt to equity|PEG|Price to book|Price to Sales|EVEBITDA|Price to Free|times|Current ratio/i.test(field)||(Math.abs(val)<5&&!/Piotroski|score/i.test(field))){hi=Math.max(5,val*3);step=val<1?.05:.1}
+ else if(/Piotroski|score/i.test(field)){hi=9;step=1}
+ else if(/Price to Earning|PE\b|Coverage/i.test(field)){hi=Math.max(60,val*2);step=1}
+ else if(/growth|return on|ROCE|ROE|CAGR/i.test(field)){lo=-20;hi=Math.max(60,val*1.5);step=1}
+ else {hi=Math.max(100,val*2);step=Math.abs(val)>=100?10:1}
+ return {field,op,val,lo,hi,step,mult};
+}
+function fqSlidersRender(){
+ let box=$('#fqSliderList'),ta=$('#fqQuery');if(!box||!ta)return;
+ let lines=ta.value.split(/\s+AND\s*\n/);let specs=lines.map((l,i)=>({i,spec:fqSliderSpec(l.trim())})).filter(x=>x.spec);
+ if(!specs.length){box.innerHTML='<div class="hint">No simple number rules in this query.</div>';return}
+ box.innerHTML=specs.map(x=>{let sp=x.spec,dec=sp.step<1?(sp.step<.1?2:1):0;return `<div class="fqsl"><span class="fqslf"><i>${escapeHtml(sp.field)}</i> ${escapeHtml(sp.op)}</span><input type="range" data-line="${x.i}" min="${sp.lo}" max="${sp.hi}" step="${sp.step}" value="${sp.val}" aria-label="${escapeHtml(sp.field)}"><b data-val="${x.i}">${sp.val.toFixed(dec)}</b></div>`}).join('');
+ box.querySelectorAll('input[type=range]').forEach(r=>r.oninput=()=>{let i=+r.dataset.line,v=+r.value,dec=(+r.step)<1?((+r.step)<.1?2:1):0;let L=ta.value.split(/\s+AND\s*\n/);let line=L[i];if(line===undefined)return;
+  let nl=line.replace(/(-?\d+(?:\.\d+)?)\s*$/,v.toFixed(dec));L[i]=nl;ta.value=L.join(' AND\n');ta.dataset.edited='1';box.querySelector(`[data-val="${i}"]`).textContent=v.toFixed(dec);fqCheck();fqTuneRender()});
+}
 function fqCheck(){
  let ta=$('#fqQuery'),el=$('#fqCheck');if(!ta||!el)return;
  let unk=fqUnknownFields(ta.value);
@@ -6056,7 +6166,7 @@ function fqCheck(){
 function fqSavedRender(){
  let el=$('#fqSaved');if(!el)return;let a=fqSavedLoad();
  el.innerHTML=a.length?a.map((x,i)=>`<div class="fqsaved"><b>${escapeHtml(x.name)}</b><span class="hint">${new Date(x.when).toLocaleDateString()}</span><button class="btn" data-fqload="${i}">Load</button><button class="btn" data-fqdel="${i}">Delete</button></div>`).join(''):'<div class="hint">Nothing saved yet. Edit a query, give it a name and press Save.</div>';
- el.querySelectorAll('[data-fqload]').forEach(b=>b.onclick=()=>{let x=fqSavedLoad()[+b.dataset.fqload];if(!x)return;let ta=$('#fqQuery');ta.value=x.q;ta.dataset.edited='1';$('#fqTitle').textContent=x.name;$('#fqNotes').innerHTML='';$('#fqGoalLine').textContent='';fqCheck();$('#fqName').value=x.name});
+ el.querySelectorAll('[data-fqload]').forEach(b=>b.onclick=()=>{let x=fqSavedLoad()[+b.dataset.fqload];if(!x)return;let ta=$('#fqQuery');ta.value=x.q;ta.dataset.edited='1';$('#fqTitle').textContent=x.name;$('#fqNotes').innerHTML='';$('#fqGoalLine').textContent='';fqCheck();fqSlidersRender();$('#fqName').value=x.name});
  el.querySelectorAll('[data-fqdel]').forEach(b=>b.onclick=()=>{let a=fqSavedLoad();a.splice(+b.dataset.fqdel,1);fqSavedWrite(a);fqSavedRender()});
 }
 function fqInit(){
@@ -6067,7 +6177,7 @@ function fqInit(){
  ps.onchange=()=>{if(!ps.value)return;fqState.mode='preset';fqState.preset=ps.value;goals.querySelectorAll('.fqgoal').forEach(x=>x.classList.remove('on'));let ta=$('#fqQuery');if(ta)delete ta.dataset.edited;fqRender()};
  $('#fqStrict').onchange=e=>{fqState.strict=+e.target.value;let ta=$('#fqQuery');if(ta)delete ta.dataset.edited;fqRender()};
  $('#fqCap').onchange=e=>{fqState.cap=+e.target.value;let ta=$('#fqQuery');if(ta)delete ta.dataset.edited;fqRender()};
- $('#fqQuery').addEventListener('input',()=>{$('#fqQuery').dataset.edited='1';fqCheck()});
+ $('#fqQuery').addEventListener('input',()=>{$('#fqQuery').dataset.edited='1';fqCheck();clearTimeout(window.__fqSlT);window.__fqSlT=setTimeout(fqSlidersRender,600)});
  $('#fqReset').onclick=()=>{let ta=$('#fqQuery');delete ta.dataset.edited;fqRender()};
  $('#fqCopy').onclick=()=>fqCopy($('#fqQuery').value,$('#fqMsg'));
  $('#fqStricter').onclick=fqStricter;$('#fqUndo').onclick=fqUndo;
